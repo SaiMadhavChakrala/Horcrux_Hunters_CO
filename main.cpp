@@ -8,18 +8,18 @@ using namespace std;
 class Core
 {
 public:
-    int reg[32];
-
+    int reg[32] = {0};
     int pc = 0;
     vector<string> program;
     map<string, int> labels;
     void execute(int memory[]);
+    stack<int> rec;
 };
 void Core::execute(int memory[])
 {
     vector<string> parts;
     string s;
-    if(pc>=program.size())
+    if (pc >= program.size())
         return;
     stringstream ss(program[pc]);
     while (getline(ss, s, ' '))
@@ -27,23 +27,23 @@ void Core::execute(int memory[])
         // s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
         if (s[s.size() - 1] == ':' && parts.size() == 0)
         {
-            if (labels[s.substr(0,s.size()-1)] == 0)
+            if (labels[s.substr(0, s.size() - 1)] == 0)
             {
-                labels[s.substr(0,s.size()-1)] = pc + 1;
-                cout << "The Label \"" << s << "\" is in Line no. " << labels[s] << endl;
+                labels[s.substr(0, s.size() - 1)] = pc + 1;
+                cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s != "\0")
             parts.push_back(s);
     }
-    // for (auto i : parts)
-    // {
-    //     cout << j << ":" << i << endl;
-    //     j++;
-    // }
-    // cout << j << "th time" << endl;
-    // j++;
-    string opcode = parts[0];
+    for (auto i : parts)
+    {
+        cout << i << endl;
+    }
+    cout << endl;
+    string opcode = "";
+    if (!parts.empty())
+        opcode = parts[0];
     if (opcode == "ADD" || opcode == "ADDI")
     {
         int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
@@ -79,7 +79,8 @@ void Core::execute(int memory[])
     }
     else if (opcode == "LI")
     {
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        cout << parts[2] << endl;
+        int rs1 = stoi(parts[2]);
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         rd1 = rs1;
     }
@@ -123,7 +124,7 @@ void Core::execute(int memory[])
         if (rs1 != rs2)
         {
             string label = parts[3];
-            cout << labels[parts[3]]<< endl;
+            cout << labels[parts[3]] << endl;
             if (labels[label] != 0)
             {
                 pc = labels[label] - 2;
@@ -158,7 +159,94 @@ void Core::execute(int memory[])
             }
         }
     }
+    else if (opcode == "JAL")
+    {
+        rec.push(pc + 1);
+        reg[stoi(parts[1].substr(1, parts[1].size()))] = pc + 1;
+        string label = parts[2];
+        if (labels[label] != 0)
+        {
+            pc = labels[label] - 2;
+        }
+        else
+        {
+            int j;
+            while (pc < program.size())
+            {
+                string s = "";
+                for (j = 0; j < program[pc].size(); j++)
+                {
+                    if (program[pc][j] == ':')
+                    {
+                        break;
+                    }
+                }
+                for (int k = 0; k < j; k++)
+                {
+                    if (program[pc][k] != ' ')
+                    {
+                        s += program[pc][k];
+                    }
+                }
+                if (s == label)
+                {
+                    pc--;
+                    break;
+                }
+                pc++;
+            }
+        }
+    }
+    else if (opcode == "ret")
+    {
+        if (!rec.empty())
+        {
+            pc = rec.top() - 1;
+            rec.pop();
+        }
+    }
+    else if (opcode == "j")
+    {
+        string label = parts[1];
+        if (labels[label] != 0)
+        {
+            pc = labels[label] - 2;
+        }
+        else
+        {
+            int j;
+            while (pc < program.size())
+            {
+                string s = "";
+                for (j = 0; j < program[pc].size(); j++)
+                {
+                    if (program[pc][j] == ':')
+                    {
+                        break;
+                    }
+                }
+                for (int k = 0; k < j; k++)
+                {
+                    if (program[pc][k] != ' ')
+                    {
+                        s += program[pc][k];
+                    }
+                }
+                if (s == label)
+                {
+                    pc--;
+                    break;
+                }
+                pc++;
+            }
+        }
+    }
     pc += 1;
+    if (pc >= program.size() && !rec.empty())
+    {
+        pc = rec.top();
+        rec.pop();
+    }
 }
 class Processor
 {
@@ -168,20 +256,40 @@ public:
     Core cores[2];
     void run()
     {
-        while(cores[0].pc<cores[0].program.size()||cores[1].pc<cores[1].program.size())
+        cout << "--------------Before running----------" << endl;
+        for (int i = 0; i < 32; i++)
+        {
+            cout << "X" << i << "    " << cores[0].reg[i] << endl;
+        }
+        while (cores[0].pc < cores[0].program.size() || cores[1].pc < cores[1].program.size())
         {
             cores[0].execute(memory);
             cores[1].execute(memory);
+        }
+        cout << "--------------After Running---------------" << endl;
+        for (int i = 0; i < 32; i++)
+        {
+            cout << "X" << i << "    " << cores[0].reg[i] << endl;
         }
     }
 };
 int main()
 {
     Processor sim;
-    sim.cores[0].reg[1] = 0;
-    sim.cores[0].reg[3] = 5;
-    sim.cores[0].program.push_back("Loop:  ADDI X1 X1 1");
-    sim.cores[0].program.push_back("BNE X1 X3 Loop");
+    std::string filepath = "C:\\Users\\jyoth\\OneDrive\\Desktop\\Horcrux_Hunters_CO\\Testfile[1].txt";
+    std::ifstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "Unable to open file: " << filepath << std::endl;
+        return 1;
+    }
+    std::string line;
+    while (std::getline(file, line))
+    {
+        sim.cores[0].program.push_back(line);
+        cout << line << endl;
+    }
     sim.run();
+    file.close();
     return 0;
 }

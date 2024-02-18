@@ -1,0 +1,7 @@
+add_num: ADD X2 X3 X4
+ret
+main: ADD X2 X3 X4
+LI X3 3
+LI X4 5
+JAL X1 add_num
+ADDI X2 X2 2
