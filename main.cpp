@@ -256,6 +256,7 @@ public:
     Core cores[2];
     void run()
     {
+        printf("%p\n", memory);
         cout << "--------------Before running----------" << endl;
         for (int i = 0; i < 32; i++)
         {
@@ -266,30 +267,28 @@ public:
             cores[0].execute(memory);
             cores[1].execute(memory);
         }
-        cout << "--------------After Running---------------" << endl;
-        for (int i = 0; i < 32; i++)
-        {
-            cout << "X" << i << "    " << cores[0].reg[i] << endl;
-        }
     }
 };
 int main()
 {
     Processor sim;
-    std::string filepath = "C:\\Users\\jyoth\\OneDrive\\Desktop\\Horcrux_Hunters_CO\\Testfile[1].txt";
-    std::ifstream file(filepath);
-    if (!file.is_open())
+    sim.run();
+    string s="";
+    sim.cores[0].reg[1]=1;
+    for(int i=0;i<32;i++)
     {
-        std::cerr << "Unable to open file: " << filepath << std::endl;
+        s.append(to_string(sim.cores[0].reg[i]));
+        s.append(" ");
+    }
+
+    std::ofstream outFile("output.txt");
+    if (outFile.is_open()) {
+        outFile << s << std::endl;
+        outFile.close();
+        return 0;
+    } else {
+        std::cerr << "Error opening output.txt" << std::endl;
         return 1;
     }
-    std::string line;
-    while (std::getline(file, line))
-    {
-        sim.cores[0].program.push_back(line);
-        cout << line << endl;
-    }
-    sim.run();
-    file.close();
     return 0;
 }
