@@ -21,11 +21,12 @@ public:
     vector<string> program;
     string segment = ".text";
     map<string, Variable_p> variables;
+    map<ll, string> address_datatype;
     map<string, int> labels;
-    void execute(int memory[]);
+    void execute(int memory[], ll &top);
     stack<int> rec;
 };
-void Core::execute(int memory[])
+void Core::execute(int memory[], ll &top)
 {
     vector<string> parts;
     string s;
@@ -70,6 +71,7 @@ void Core::execute(int memory[])
     {
         pc++;
         segment = ".data";
+        execute(memory, top);
         return;
     }
     else if (segment == ".data")
@@ -78,25 +80,32 @@ void Core::execute(int memory[])
         {
             cout << parts[i] << endl;
         }
+        cout << "Hello madhav" << parts[0][parts[0].size() - 1] << endl;
         if (!parts.empty() && parts[0][parts[0].size() - 1] == ':')
         {
             int n = parts.size();
-            for (int i = 0; i < n - 2; i++)
+            ll m = top;
+            Variable_p a;
+            a.address = (int)(memory+top);
+            for (int i = top; i < m + n - 2; i++)
             {
-                memory[i] = stoi(parts[i + 2]);
+                memory[i] = stoi(parts[i - m+2]);
                 cout << memory[i] << " ";
+                cout << "top:" << top << endl;
+                top++;
             }
             cout << endl;
             parts[0] = parts[0].substr(0, parts[0].size() - 1);
-            Variable_p a;
-            a.address = (int)memory;
             a.data_type = parts[1];
             if (parts[1] == ".word")
                 a.size = 4;
             a.value = stoi(parts[2]);
             variables[parts[0]] = a;
             cout << *((int *)a.address) << " " << a.address << " " << a.size << " " << a.data_type << endl;
+            cout << "Hi" << endl;
         }
+        pc++;
+        execute(memory, top);
     }
     else if (opcode == "mv")
     {
@@ -110,6 +119,7 @@ void Core::execute(int memory[])
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         string rs1 = parts[2];
         rd1 = variables[rs1].address;
+        cout << "load address" << rd1 << endl;
     }
     else if (opcode == "add" || opcode == "addi")
     {
@@ -194,6 +204,49 @@ void Core::execute(int memory[])
         int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
         cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 != rs2)
+        {
+            string label = parts[3];
+            cout << labels[parts[3]] << endl;
+            if (labels[label] != 0)
+            {
+                pc = labels[label] - 2;
+            }
+            else
+            {
+                int j;
+                while (pc < program.size())
+                {
+                    string s = "";
+                    for (j = 0; j < program[pc].size(); j++)
+                    {
+                        if (program[pc][j] == ':')
+                        {
+                            break;
+                        }
+                    }
+                    for (int k = 0; k < j; k++)
+                    {
+                        if (program[pc][k] != ' ')
+                        {
+                            s += program[pc][k];
+                        }
+                    }
+                    if (s == label)
+                    {
+                        pc--;
+                        break;
+                    }
+                    pc++;
+                }
+            }
+        }
+    }
+    else if (opcode == "beq")
+    {
+        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        if (rs1 == rs2)
         {
             string label = parts[3];
             cout << labels[parts[3]] << endl;
@@ -412,6 +465,7 @@ public:
     int memory[4096] = {0};
     int clock = 0;
     Core cores[2];
+    ll top = 0;
     void upload(Core cores[]);
     void run()
     {
@@ -423,8 +477,8 @@ public:
         }
         while (cores[0].pc < cores[0].program.size() || cores[1].pc < cores[1].program.size())
         {
-            cores[0].execute(memory);
-            cores[1].execute(memory);
+            cores[0].execute(memory, top);
+            cores[1].execute(memory, top);
         }
         string s = "";
         std::ofstream outFile("output.txt");
@@ -464,7 +518,7 @@ public:
             cout << "X" << i << "    " << cores[1].reg[i] << endl;
         }
         cout << "-------------Memory----------------" << endl;
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 40; i++)
         {
             cout << memory[i] << " ";
         }

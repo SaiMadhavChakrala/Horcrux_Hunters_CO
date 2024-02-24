@@ -5,8 +5,8 @@ import subprocess
 class MyApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("My Cool GUI App")
-        self.root.geometry("1200x850")  # Enlarged window size
+        self.root.title("Ripes")
+        self.root.geometry("1200x860")  # Enlarged window size
 
         # Style configuration
         style = ttk.Style()
@@ -29,13 +29,13 @@ class MyApp:
         save_button_2.place(x=250, y=400)
 
         # Run C++ Button
-        run_cpp_button = ttk.Button(self.root, text="Run C++", command=self.run_cpp)
+        run_cpp_button = ttk.Button(self.root, text="Run", command=self.run_cpp)
         run_cpp_button.place(x=520, y=400)
 
         # Table
         self.data_table = ttk.Treeview(self.root, columns=('Column1', 'Column2'), show='headings', height=32)
-        self.data_table.heading('Column1', text='Column1')
-        self.data_table.heading('Column2', text='Column2')
+        self.data_table.heading('Column1', text='Core1')
+        self.data_table.heading('Column2', text='Core2')
 
         # Adding sample data, you can replace it with your actual data
         for i in range(32):
