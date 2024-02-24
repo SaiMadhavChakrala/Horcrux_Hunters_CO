@@ -418,10 +418,11 @@ public:
             std::cerr << "Error opening output.txt" << std::endl;
         }
         cout << "--------------After Running---------------" << endl;
-        cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
+        cout << "   Core1 "
+             << "    Core2" << endl;
         for (int i = 0; i < 32; i++)
         {
-            cout << left << setw(7) <<"X"+to_string(i)<< setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
+            cout << "X" << i << "    " << cores[0].reg[i] << "  " << cores[1].reg[i] << endl;
         }
         cout << "-------------Memory----------------" << endl;
         for (int i = 0; i < 40; i++)
@@ -445,6 +446,7 @@ int main()
     while (std::getline(file, line))
     {
         sim.cores[0].program.push_back(line);
+        // cout << line << endl;
     }
     file.close();
     std::string filepath2 = "./Testfile[2].txt";
@@ -458,6 +460,7 @@ int main()
     while (std::getline(file2, line2))
     {
         sim.cores[1].program.push_back(line2);
+        // cout << line << endl;
     }
     sim.run();
     string s = "";
