@@ -24,8 +24,46 @@ public:
     map<ll, string> address_datatype;
     map<string, int> labels;
     void execute(int memory[], ll &top);
+    void go_to(vector<string> &parts,string label);
     stack<int> rec;
 };
+void Core::go_to(vector<string> &parts,string label)
+{
+    // string label = parts[3];
+    // cout << labels[parts[3]] << endl;
+    if (labels[label] != 0)
+    {
+        pc = labels[label] - 2;
+    }
+    else
+    {
+        int j;
+        while (pc < program.size())
+        {
+            string s = "";
+            for (j = 0; j < program[pc].size(); j++)
+            {
+                if (program[pc][j] == ':')
+                {
+                    break;
+                }
+            }
+            for (int k = 0; k < j; k++)
+            {
+                if (program[pc][k] != ' ')
+                {
+                    s += program[pc][k];
+                }
+            }
+            if (s == label)
+            {
+                pc--;
+                break;
+            }
+            pc++;
+        }
+    }
+}
 void Core::execute(int memory[], ll &top)
 {
     vector<string> parts;
@@ -86,10 +124,10 @@ void Core::execute(int memory[], ll &top)
             int n = parts.size();
             ll m = top;
             Variable_p a;
-            a.address = (int)(memory+top);
+            a.address = (int)(memory + top);
             for (int i = top; i < m + n - 2; i++)
             {
-                memory[i] = stoi(parts[i - m+2]);
+                memory[i] = stoi(parts[i - m + 2]);
                 cout << memory[i] << " ";
                 cout << "top:" << top << endl;
                 top++;
@@ -206,39 +244,7 @@ void Core::execute(int memory[], ll &top)
         if (rs1 != rs2)
         {
             string label = parts[3];
-            cout << labels[parts[3]] << endl;
-            if (labels[label] != 0)
-            {
-                pc = labels[label] - 2;
-            }
-            else
-            {
-                int j;
-                while (pc < program.size())
-                {
-                    string s = "";
-                    for (j = 0; j < program[pc].size(); j++)
-                    {
-                        if (program[pc][j] == ':')
-                        {
-                            break;
-                        }
-                    }
-                    for (int k = 0; k < j; k++)
-                    {
-                        if (program[pc][k] != ' ')
-                        {
-                            s += program[pc][k];
-                        }
-                    }
-                    if (s == label)
-                    {
-                        pc--;
-                        break;
-                    }
-                    pc++;
-                }
-            }
+            go_to(parts,label);
         }
     }
     else if (opcode == "beq")
@@ -249,39 +255,7 @@ void Core::execute(int memory[], ll &top)
         if (rs1 == rs2)
         {
             string label = parts[3];
-            cout << labels[parts[3]] << endl;
-            if (labels[label] != 0)
-            {
-                pc = labels[label] - 2;
-            }
-            else
-            {
-                int j;
-                while (pc < program.size())
-                {
-                    string s = "";
-                    for (j = 0; j < program[pc].size(); j++)
-                    {
-                        if (program[pc][j] == ':')
-                        {
-                            break;
-                        }
-                    }
-                    for (int k = 0; k < j; k++)
-                    {
-                        if (program[pc][k] != ' ')
-                        {
-                            s += program[pc][k];
-                        }
-                    }
-                    if (s == label)
-                    {
-                        pc--;
-                        break;
-                    }
-                    pc++;
-                }
-            }
+            go_to(parts,label);
         }
     }
     else if (opcode == "blt")
@@ -292,39 +266,7 @@ void Core::execute(int memory[], ll &top)
         if (rs1 < rs2)
         {
             string label = parts[3];
-            cout << labels[parts[3]] << endl;
-            if (labels[label] != 0)
-            {
-                pc = labels[label] - 2;
-            }
-            else
-            {
-                int j;
-                while (pc < program.size())
-                {
-                    string s = "";
-                    for (j = 0; j < program[pc].size(); j++)
-                    {
-                        if (program[pc][j] == ':')
-                        {
-                            break;
-                        }
-                    }
-                    for (int k = 0; k < j; k++)
-                    {
-                        if (program[pc][k] != ' ')
-                        {
-                            s += program[pc][k];
-                        }
-                    }
-                    if (s == label)
-                    {
-                        pc--;
-                        break;
-                    }
-                    pc++;
-                }
-            }
+            go_to(parts,label);
         }
     }
     else if (opcode == "bgt")
@@ -335,39 +277,7 @@ void Core::execute(int memory[], ll &top)
         if (rs1 > rs2)
         {
             string label = parts[3];
-            cout << labels[parts[3]] << endl;
-            if (labels[label] != 0)
-            {
-                pc = labels[label] - 2;
-            }
-            else
-            {
-                int j;
-                while (pc < program.size())
-                {
-                    string s = "";
-                    for (j = 0; j < program[pc].size(); j++)
-                    {
-                        if (program[pc][j] == ':')
-                        {
-                            break;
-                        }
-                    }
-                    for (int k = 0; k < j; k++)
-                    {
-                        if (program[pc][k] != ' ')
-                        {
-                            s += program[pc][k];
-                        }
-                    }
-                    if (s == label)
-                    {
-                        pc--;
-                        break;
-                    }
-                    pc++;
-                }
-            }
+            go_to(parts,label);
         }
     }
     else if (opcode == "jal")
@@ -513,9 +423,10 @@ public:
             std::cerr << "Error opening output.txt" << std::endl;
         }
         cout << "--------------After Running---------------" << endl;
+        cout<<"   Core1 "<<"    Core2"<<endl;
         for (int i = 0; i < 32; i++)
         {
-            cout << "X" << i << "    " << cores[1].reg[i] << endl;
+            cout << "X" << i << "    " << cores[0].reg[i]<<"  "<<cores[1].reg[i] << endl;
         }
         cout << "-------------Memory----------------" << endl;
         for (int i = 0; i < 40; i++)
