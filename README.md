@@ -1,6 +1,8 @@
 CO - Dual Core Processor
 Horcrux Hunters
 
+Refer to out.txt for the ouput/memory/reg values
+
 7th commit : 25-02-2024
 Introduced aliases to the registers,added printing feature,some minor bugs were fixed
 
