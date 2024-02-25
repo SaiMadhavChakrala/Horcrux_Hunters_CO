@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+// #include<Processor.h>
 using namespace std;
 #define ll long long int
 #define f(i, a, n) for (ll i = a; i < n; i++)
@@ -53,6 +54,7 @@ void Core::go_to(vector<string> &parts, string label)
                     s += program[pc][k];
                 }
             }
+            labels[s] = pc + 1;
             if (s == label)
             {
                 pc--;
@@ -68,7 +70,7 @@ void Core::execute(int memory[], ll &top)
     string s;
     if (pc >= program.size())
         return;
-    cout << "Program counter:" << pc + 1 << endl;
+    // cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -83,17 +85,17 @@ void Core::execute(int memory[], ll &top)
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
+                // cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s != "\0")
             parts.push_back(s);
     }
-    for (auto i : parts)
-    {
-        cout << i << endl;
-    }
-    cout << endl;
+    // for (auto i : parts)
+    // {
+    //     cout << i << endl;
+    // }
+    // cout << endl;
     string opcode = "";
     if (!parts.empty())
         opcode = parts[0];
@@ -112,11 +114,11 @@ void Core::execute(int memory[], ll &top)
     }
     else if (segment == ".data")
     {
-        for (int i = 0; i < parts.size(); i++)
-        {
-            cout << parts[i] << endl;
-        }
-        cout << "Hello madhav" << parts[0][parts[0].size() - 1] << endl;
+        // for (int i = 0; i < parts.size(); i++)
+        // {
+        //     cout << parts[i] << endl;
+        // }
+        // cout << "Hello madhav" << parts[0][parts[0].size() - 1] << endl;
         if (!parts.empty() && parts[0][parts[0].size() - 1] == ':')
         {
             int n = parts.size();
@@ -130,41 +132,57 @@ void Core::execute(int memory[], ll &top)
                 for (int i = top; i < m + n - 2; i++)
                 {
                     memory[i] = stoi(parts[i - m + 2]);
-                    cout << memory[i] << " ";
-                    cout << "top:" << top << endl;
+                    // cout << memory[i] << " ";
+                    // cout << "top:" << top << endl;
                     top++;
                 }
-                cout << endl;
+                // cout << endl;
                 a.value = stoi(parts[2]);
                 variables[parts[0]] = a;
-                cout << *((int *)a.address) << " " << a.address << " " << a.size << " " << a.data_type << endl;
-                cout << "Hi" << endl;
+                // cout << *((int *)a.address) << " " << a.address << " " << a.size << " " << a.data_type << endl;
+                // cout << "Hi" << endl;
                 a.size = 4;
             }
             else if (parts[1] == ".string")
             {
-                cout << "String:" << parts[2] << endl;
-                parts[2] = parts[2].substr(1,parts[2].size()-1);
+                for (int i = 3; i < parts.size(); i++)
+                {
+                    if (parts[i][0] == '#')
+                        break;
+                    parts[2] += " " + parts[i];
+                    // cout << parts[2] << endl;
+                }
+                parts[2] = parts[2].substr(1, parts[2].size() - 2);
+                // cout << "String:" << parts[2] << endl;
                 parts[2] += "\0";
-                int count = 0;
+                // parts[2] = parts[2].substr(1, parts[2].size() - 2);
+                int count = top * 4 + (ll)memory;
+                char t = '\n';
+                cout << t;
                 for (int i = top * 4 + (ll)memory; i < top * 4 + (ll)memory + parts[2].size(); i++)
                 {
-                    *((char*)i) = (int)(parts[2][i - top * 4 - (ll)memory]);
-                    cout << (int)*((char*)i) << " ";
+                    // cout << parts[2][i - top * 4 - (ll)memory] << " ";
+                    if (parts[2][i - top * 4 - (ll)memory] == '\\')
+                    {
+                        t = '\\';
+                        // cout << "Hello:"<< (int)('\\') << endl;
+                        continue;
+                    }
+                    if (t == '\\')
+                    {
+                        if (parts[2][i - top * 4 - (ll)memory] == 'n')
+                            parts[2][i - top * 4 - (ll)memory] = '\n';
+                        // cout << "Appeared:" << parts[2][i - top * 4 - (ll)memory]<<(int)parts[2][i - top * 4 - (ll)memory] << endl;
+                        t = ' ';
+                    }
+                    *((char *)count) = (int)(parts[2][i - top * 4 - (ll)memory]);
+                    count++;
                 }
-                cout <<"------------"<< endl;
-                int p = top * 4 + (ll)memory;
-                while((char)*((bool*)p)!='\0')
-                {
-                    cout << *((char *)p) << " ";
-                    p++;
-                }
-                cout << endl;
+                // cout << "------------" << endl;
                 a.address = (int)(memory + top);
-                parts[0] = parts[0].substr(0, parts[0].size() - 1);
                 a.data_type = parts[1];
                 variables[parts[0]] = a;
-                top += ceil(parts[2].size() / (double)4);
+                top += ceil(parts[2].size()+1 / (double)4);
             }
         }
         pc++;
@@ -176,14 +194,15 @@ void Core::execute(int memory[], ll &top)
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
         rd1 = rs1;
-        cout << reg[stoi(parts[1].substr(1, parts[1].size()))] << endl;
+        // cout << reg[stoi(parts[1].substr(1, parts[1].size()))] << endl;
     }
     else if (opcode == "la")
     {
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         string rs1 = parts[2];
         rd1 = variables[rs1].address;
-        cout << "load address" << rd1 << endl;
+        // cout << variables[rs1].data_type;
+        // cout << "load address: " << rd1 << endl;
     }
     else if (opcode == "add" || opcode == "addi")
     {
@@ -195,7 +214,7 @@ void Core::execute(int memory[], ll &top)
             rs2 = stoi(parts[3]);
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         rd1 = rs1 + rs2;
-        cout << "Addition in progress" << endl;
+        // cout << "Addition in progress" << endl;
     }
     else if (opcode == "sub")
     {
@@ -220,7 +239,7 @@ void Core::execute(int memory[], ll &top)
     }
     else if (opcode == "li")
     {
-        cout << parts[2] << endl;
+        // cout << parts[2] << endl;
         int rs1 = stoi(parts[2]);
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         rd1 = rs1;
@@ -230,18 +249,26 @@ void Core::execute(int memory[], ll &top)
         vector<string> source;
         string s;
         stringstream ss(parts[2]);
-        while (getline(ss, s, '('))
-        {
-            source.push_back(s);
-        }
-        int offset = stoi(source[0]);
-        int location = reg[stoi(source[1].substr(1, source[1].size() - 1))];
-        cout << offset << " " << location << endl;
-        cout << "Location:" << location << endl;
-        int rs1 = *((int *)(location + offset));
         int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        rd1 = rs1;
-        cout << "Load Word:" << rd1 << endl;
+        if (variables[parts[2]].data_type == ".word")
+        {
+            rd1 = variables[parts[2]].value;
+            // cout << "Hi" << endl;
+        }
+        else
+        {
+            while (getline(ss, s, '('))
+            {
+                source.push_back(s);
+            }
+            int offset = stoi(source[0]);
+            int location = reg[stoi(source[1].substr(1, source[1].size() - 1))];
+            // cout << offset << " " << location << endl;
+            // cout << "Location:" << location << endl;
+            int rs1 = *((int *)(location + offset));
+            rd1 = rs1;
+        }
+        // cout << "Load Word:" << rd1 << endl;
     }
     else if (opcode == "sw")
     {
@@ -254,19 +281,19 @@ void Core::execute(int memory[], ll &top)
         }
         int offset = stoi(source[0]);
         int location = stoi(source[1].substr(1, source[1].size() - 1));
-        cout << offset << " " << location << endl;
+        // cout << offset << " " << location << endl;
         location = (reg[location] - (int)memory) / 4;
-        cout << "location:" << location + offset / 4 << endl;
+        // cout << "location:" << location + offset / 4 << endl;
         int &rd1 = memory[location + offset / 4];
         int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        cout << rs1 << endl;
+        // cout << rs1 << endl;
         rd1 = rs1;
     }
     else if (opcode == "bne")
     {
         int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 != rs2)
         {
             string label = parts[3];
@@ -277,7 +304,7 @@ void Core::execute(int memory[], ll &top)
     {
         int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 == rs2)
         {
             string label = parts[3];
@@ -288,7 +315,7 @@ void Core::execute(int memory[], ll &top)
     {
         int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 < rs2)
         {
             string label = parts[3];
@@ -299,7 +326,7 @@ void Core::execute(int memory[], ll &top)
     {
         int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
         int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 > rs2)
         {
             string label = parts[3];
@@ -357,6 +384,23 @@ void Core::execute(int memory[], ll &top)
         string label = parts[1];
         go_to(parts, label);
     }
+    else if (opcode == "ecall")
+    {
+        if (reg[17] == 1)
+        {
+            cout << reg[10];
+        }
+        if (reg[17] == 4)
+        {
+            // cout << "Program counter:" << pc << endl;
+            int p = reg[10];
+            while ((char)*((char *)p) != '\0')
+            {
+                cout << (char)*((char *)p);
+                p++;
+            }
+        }
+    }
     pc += 1;
     if (pc >= program.size() && !rec.empty())
     {
@@ -375,15 +419,21 @@ public:
     void run()
     {
         printf("%p\n", memory);
-        cout << "--------------Before running----------" << endl;
+        cout << "-------Before running-------" << endl;
+        cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
         for (int i = 0; i < 32; i++)
         {
-            cout << "X" << i << "    " << cores[0].reg[i] << endl;
+            cout << left << setw(7) << "X" + to_string(i) << setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
         }
         while (cores[0].pc < cores[0].program.size() || cores[1].pc < cores[1].program.size())
         {
             cores[0].execute(memory, top);
             cores[1].execute(memory, top);
+            // cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
+            // for (int i = 0; i < 32; i++)
+            // {
+            //     cout << left << setw(7) << "X" + to_string(i) << setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
+            // }
         }
         string s = "";
         std::ofstream outFile("output.txt");
@@ -417,13 +467,13 @@ public:
         {
             std::cerr << "Error opening output.txt" << std::endl;
         }
-        cout << "--------------After Running---------------" << endl;
+        cout <<endl<< "---------After Running---------" << endl;
         cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
         for (int i = 0; i < 32; i++)
         {
-            cout << left << setw(7) <<"X"+to_string(i)<< setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
+            cout << left << setw(7) << "X" + to_string(i) << setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
         }
-        cout << "-------------Memory----------------" << endl;
+        cout << "--------------------------------Memory---------------------------------" << endl;
         for (int i = 0; i < 40; i++)
         {
             cout << memory[i] << " ";
@@ -433,6 +483,8 @@ public:
 };
 int main()
 {
+    // freopen("input.txt","r",stdin);
+    freopen("out.txt", "w", stdout);
     Processor sim;
     std::string filepath = "./Testfile[1].txt";
     std::ifstream file(filepath);
