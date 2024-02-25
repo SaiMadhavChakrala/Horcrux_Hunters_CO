@@ -1,5 +1,5 @@
+//please refer out.txt for output
 #include <bits/stdc++.h>
-// #include<Processor.h>
 using namespace std;
 #define ll long long int
 #define f(i, a, n) for (ll i = a; i < n; i++)
@@ -41,7 +41,7 @@ public:
     map<string, Variable_p> variables;
     map<ll, string> address_datatype;
     map<string, int> labels;
-    void execute(int memory[], ll &top,int i);
+    void execute(int memory[], ll &top, int i);
     void go_to(vector<string> &parts, string label);
     stack<int> rec;
 };
@@ -81,7 +81,7 @@ void Core::go_to(vector<string> &parts, string label)
         }
     }
 }
-void Core::execute(int memory[], ll &top,int i)
+void Core::execute(int memory[], ll &top, int i)
 {
     vector<string> parts;
     string s;
@@ -126,7 +126,7 @@ void Core::execute(int memory[], ll &top,int i)
     {
         pc++;
         segment = ".data";
-        execute(memory, top,i);
+        execute(memory, top, i);
         return;
     }
     else if (segment == ".data")
@@ -203,7 +203,7 @@ void Core::execute(int memory[], ll &top,int i)
             }
         }
         pc++;
-        execute(memory, top,i);
+        execute(memory, top, i);
         return;
     }
     else if (opcode == "mv")
@@ -456,8 +456,8 @@ public:
         }
         while (cores[0].pc < cores[0].program.size() || cores[1].pc < cores[1].program.size())
         {
-            cores[0].execute(memory, top,0);
-            cores[1].execute(memory, top,1);
+            cores[0].execute(memory, top, 0);
+            cores[1].execute(memory, top, 1);
             // cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
             // for (int i = 0; i < 32; i++)
             // {
@@ -513,7 +513,6 @@ public:
 };
 int main()
 {
-    // freopen("input.txt","r",stdin);
     freopen("out.txt", "w", stdout);
     Processor sim;
     std::string filepath = "./Testfile[1].txt";
@@ -543,8 +542,6 @@ int main()
     }
     sim.run();
     string s = "";
-
     file2.close();
-
     return 0;
 }

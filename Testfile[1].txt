@@ -1,60 +1,32 @@
-.data 
- arr: .word 4 2 3 1 5 6 
-base: .word 0x0000001
-arr_len: .word 6
-newline: .string "\n"
+.data
+base: .word 20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 .text
-la x19 arr
-la x18 arr
-ecall
-li x2 0 #i=0
-li x3 0 #min_index
-lw x12 arr_len
-li x11 0
-loop1:
-     bge x2 x12 print_loop
-    addi x3 x2 0  #min_index
-     addi x20 x19 4
-     addi  x21 x19 0 #min index address
-      addi x4 x2 1
-    loop2:
-        bge x4 x12 vi
-        lw x8 0(x20)
-        lw x9 0(x21)
-        blt x8 x9 min_ind
+start:
+    li x1 0
+    li x2 0
+    li x3 18
+    li x19 19
+    li x18 20
+    la x16 base
+    la x17 base
+    la x21 base
+    la x20 base
+    loop:
+        addi x2 x1 1
+        addi x16 x20 0
+        addi x15 x20 4
+        loop1:
+            beq x18 x2 exit
+            lw x5 0(x16)
+            lw x6 0(x15)
+            blt x5 x6 exit2
+            sw x5 0(x15)
+            sw x6 0(x16)
+            exit2: 
+            addi x15 x15 4
+            addi x2 x2 1
+            j loop1
+        exit:
+        addi x1 x1 1
         addi x20 x20 4
-        addi x4 x4 1
-        j loop2
-vi:    
-    bne x3 x2 swap 
-    addi x19 x19 4
-    addi x2 x2 1
-    j loop1
-   
-min_ind:
-    addi x3 x4 0
-    addi x21 x20 0
-      addi x20 x20 4
-        addi x4 x4 1
-     j loop2  
- swap:
-     lw x30 0(x21)
-     lw x31 0(x19)
-     sw x30 0(x19)
-     sw x31 0(x21) 
-      addi x19 x19 4
-    addi x2 x2 1
-     j loop1 
-print_loop: 
-    lw x6, 0(x18)      
-    mv a0, x6       
-    li a7, 1        
-    ecall          
-    la a0, newline 
-    li a7, 4        
-    ecall         
-    addi x18, x18, 4   
-    addi x11, x11, 1  
-    blt x11, x12, print_loop 
- li a7 10          
- ecall
+        bne x1 x19 loop
