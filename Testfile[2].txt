@@ -1,7 +1,5 @@
-#bubble sort
 .data
-base: .word -1,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-str: .string " "
+base: .word 20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 .text
 start:
     li x1 0
@@ -25,22 +23,3 @@ start:
             j loop1
         exit:
         bne x1 x17 loop
-    li x15 20
-    la x16 base
-    li x2 0
-    l1:
-        addi x2 x2 1
-        lw a0 0(x16)
-        li a7 1
-        ecall
-        addi x16 x16 4
-        la a0 str
-        li a7 4
-        ecall
-        bne x2 x15 l1
-    
-        
-
-
-
-

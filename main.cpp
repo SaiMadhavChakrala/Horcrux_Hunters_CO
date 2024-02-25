@@ -1,4 +1,4 @@
-//please refer to out.txt for output
+// please refer to out.txt for output
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long int
@@ -175,7 +175,7 @@ void Core::execute(int memory[], ll &top, int i)
                 // parts[2] = parts[2].substr(1, parts[2].size() - 2);
                 int count = top * 4 + (ll)memory;
                 char t = '\n';
-                cout << t;
+                // cout << t;
                 for (int i = top * 4 + (ll)memory; i < top * 4 + (ll)memory + parts[2].size(); i++)
                 {
                     // cout << parts[2][i - top * 4 - (ll)memory] << " ";
@@ -199,7 +199,7 @@ void Core::execute(int memory[], ll &top, int i)
                 a.address = (int)(memory + top);
                 a.data_type = parts[1];
                 variables[parts[0]] = a;
-                top += ceil(parts[2].size() + 1 / (double)4);
+                top += ceil(parts[2].size() / (double)4) + 1;
             }
         }
         pc++;
@@ -264,6 +264,7 @@ void Core::execute(int memory[], ll &top, int i)
     }
     else if (opcode == "lw")
     {
+        // cout << "Program counter:" << pc+1 << endl;
         vector<string> source;
         string s;
         stringstream ss(parts[2]);
@@ -280,7 +281,7 @@ void Core::execute(int memory[], ll &top, int i)
                 source.push_back(s);
             }
             int offset = stoi(source[0]);
-            int location = reg[stoi(source[1].substr(1, source[1].size() - 1))];
+            int location = reg[regf(source[1].substr(0, source[1].size() - 1))];
             // cout << offset << " " << location << endl;
             // cout << "Location:" << location << endl;
             int rs1 = *((int *)(location + offset));
@@ -415,6 +416,7 @@ void Core::execute(int memory[], ll &top, int i)
     }
     else if (opcode == "ecall")
     {
+        // cout <<"Program Counter:"<< pc << endl;
         if (reg[17] == 1)
         {
             cout << reg[10];
@@ -426,6 +428,7 @@ void Core::execute(int memory[], ll &top, int i)
             while ((char)*((char *)p) != '\0')
             {
                 cout << (char)*((char *)p);
+                // cout << "Program counter:" << pc+1 << endl;
                 p++;
             }
         }
@@ -525,6 +528,7 @@ int main()
     std::string line;
     while (std::getline(file, line))
     {
+
         sim.cores[0].program.push_back(line);
     }
     file.close();
