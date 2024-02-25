@@ -1,4 +1,4 @@
-//please refer out.txt for output
+//please refer to out.txt for output
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long int
