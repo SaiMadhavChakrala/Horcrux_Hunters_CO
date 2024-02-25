@@ -14,6 +14,23 @@ public:
     string data_type;
     int size;
 };
+int regf(string s)
+{
+    if (s[0] == 'X' || s[0] == 'x')
+        return stoi(s.substr(1, s.size()));
+    if (s[0] == 'a')
+        return stoi(s.substr(1, s.size())) + 10;
+    if (s == "s0" || s == "s1")
+        return stoi(s.substr(1, s.size())) + 8;
+    if (s[0] == 's')
+        return stoi(s.substr(1, s.size())) + 16;
+    if (s == "tp")
+        return 4;
+    if (s == "t0" || s == "t1" || s == "t2")
+        return stoi(s.substr(1, s.size())) + 5;
+    if (s[0] == 't')
+        return stoi(s.substr(1, s.size())) + 25;
+}
 class Core
 {
 public:
@@ -24,7 +41,7 @@ public:
     map<string, Variable_p> variables;
     map<ll, string> address_datatype;
     map<string, int> labels;
-    void execute(int memory[], ll &top);
+    void execute(int memory[], ll &top,int i);
     void go_to(vector<string> &parts, string label);
     stack<int> rec;
 };
@@ -64,7 +81,7 @@ void Core::go_to(vector<string> &parts, string label)
         }
     }
 }
-void Core::execute(int memory[], ll &top)
+void Core::execute(int memory[], ll &top,int i)
 {
     vector<string> parts;
     string s;
@@ -109,7 +126,7 @@ void Core::execute(int memory[], ll &top)
     {
         pc++;
         segment = ".data";
-        execute(memory, top);
+        execute(memory, top,i);
         return;
     }
     else if (segment == ".data")
@@ -182,23 +199,24 @@ void Core::execute(int memory[], ll &top)
                 a.address = (int)(memory + top);
                 a.data_type = parts[1];
                 variables[parts[0]] = a;
-                top += ceil(parts[2].size()+1 / (double)4);
+                top += ceil(parts[2].size() + 1 / (double)4);
             }
         }
         pc++;
-        execute(memory, top);
+        execute(memory, top,i);
         return;
     }
     else if (opcode == "mv")
     {
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int &rd1 = reg[regf(parts[1])];
+        int rs1 = reg[regf(parts[2])];
         rd1 = rs1;
         // cout << reg[stoi(parts[1].substr(1, parts[1].size()))] << endl;
     }
     else if (opcode == "la")
     {
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        // int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int &rd1 = reg[regf(parts[1])];
         string rs1 = parts[2];
         rd1 = variables[rs1].address;
         // cout << variables[rs1].data_type;
@@ -206,42 +224,42 @@ void Core::execute(int memory[], ll &top)
     }
     else if (opcode == "add" || opcode == "addi")
     {
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int rs1 = reg[regf(parts[2])];
         int rs2;
         if (opcode == "add")
-            rs2 = reg[stoi(parts[3].substr(1, parts[3].size()))];
+            rs2 = reg[regf(parts[3])];
         else
             rs2 = stoi(parts[3]);
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int &rd1 = reg[regf(parts[1])];
         rd1 = rs1 + rs2;
         // cout << "Addition in progress" << endl;
     }
     else if (opcode == "sub")
     {
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        int rs2 = reg[stoi(parts[3].substr(1, parts[3].size()))];
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int rs1 = reg[regf(parts[2])];
+        int rs2 = reg[regf(parts[3])];
+        int &rd1 = reg[regf(parts[1])];
         rd1 = rs1 - rs2;
     }
     else if (opcode == "mul")
     {
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        int rs2 = reg[stoi(parts[3].substr(1, parts[3].size()))];
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int rs1 = reg[regf(parts[2])];
+        int rs2 = reg[regf(parts[3])];
+        int &rd1 = reg[regf(parts[1])];
         rd1 = rs1 * rs2;
     }
     else if (opcode == "div")
     {
-        int rs1 = reg[stoi(parts[2].substr(1, parts[2].size()))];
-        int rs2 = reg[stoi(parts[3].substr(1, parts[3].size()))];
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int rs1 = reg[regf(parts[2])];
+        int rs2 = reg[regf(parts[3])];
+        int &rd1 = reg[regf(parts[1])];
         rd1 = rs1 / rs2;
     }
     else if (opcode == "li")
     {
         // cout << parts[2] << endl;
         int rs1 = stoi(parts[2]);
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int &rd1 = reg[regf(parts[1])];
         rd1 = rs1;
     }
     else if (opcode == "lw")
@@ -249,7 +267,7 @@ void Core::execute(int memory[], ll &top)
         vector<string> source;
         string s;
         stringstream ss(parts[2]);
-        int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int &rd1 = reg[regf(parts[1])];
         if (variables[parts[2]].data_type == ".word")
         {
             rd1 = variables[parts[2]].value;
@@ -285,14 +303,14 @@ void Core::execute(int memory[], ll &top)
         location = (reg[location] - (int)memory) / 4;
         // cout << "location:" << location + offset / 4 << endl;
         int &rd1 = memory[location + offset / 4];
-        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
+        int rs1 = reg[regf(parts[1])];
         // cout << rs1 << endl;
         rd1 = rs1;
     }
     else if (opcode == "bne")
     {
-        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int rs1 = reg[regf(parts[1])];
+        int rs2 = reg[regf(parts[2])];
         // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 != rs2)
         {
@@ -302,8 +320,8 @@ void Core::execute(int memory[], ll &top)
     }
     else if (opcode == "beq")
     {
-        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int rs1 = reg[regf(parts[1])];
+        int rs2 = reg[regf(parts[2])];
         // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 == rs2)
         {
@@ -311,10 +329,21 @@ void Core::execute(int memory[], ll &top)
             go_to(parts, label);
         }
     }
+    else if (opcode == "bge")
+    {
+        int rs1 = reg[regf(parts[1])];
+        int rs2 = reg[regf(parts[2])];
+        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
+        if (rs1 >= rs2)
+        {
+            string label = parts[3];
+            go_to(parts, label);
+        }
+    }
     else if (opcode == "blt")
     {
-        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int rs1 = reg[regf(parts[1])];
+        int rs2 = reg[regf(parts[2])];
         // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 < rs2)
         {
@@ -324,8 +353,8 @@ void Core::execute(int memory[], ll &top)
     }
     else if (opcode == "bgt")
     {
-        int rs1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int rs2 = reg[stoi(parts[2].substr(1, parts[2].size()))];
+        int rs1 = reg[regf(parts[1])];
+        int rs2 = reg[regf(parts[2])];
         // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
         if (rs1 > rs2)
         {
@@ -336,7 +365,7 @@ void Core::execute(int memory[], ll &top)
     else if (opcode == "jal")
     {
         rec.push(pc + 1);
-        reg[stoi(parts[1].substr(1, parts[1].size()))] = pc + 1;
+        reg[regf(parts[1])] = pc + 1;
         string label = parts[2];
         if (labels[label] != 0)
         {
@@ -427,8 +456,8 @@ public:
         }
         while (cores[0].pc < cores[0].program.size() || cores[1].pc < cores[1].program.size())
         {
-            cores[0].execute(memory, top);
-            cores[1].execute(memory, top);
+            cores[0].execute(memory, top,0);
+            cores[1].execute(memory, top,1);
             // cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
             // for (int i = 0; i < 32; i++)
             // {
@@ -467,7 +496,8 @@ public:
         {
             std::cerr << "Error opening output.txt" << std::endl;
         }
-        cout <<endl<< "---------After Running---------" << endl;
+        cout << endl
+             << "---------After Running---------" << endl;
         cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
         for (int i = 0; i < 32; i++)
         {
