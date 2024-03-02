@@ -1,7 +1,6 @@
 #include "header.hpp"
 #include "Processor.cpp"
 #include "Core.cpp"
-
 int main()
 {
     freopen("out.txt", "w", stdout);
