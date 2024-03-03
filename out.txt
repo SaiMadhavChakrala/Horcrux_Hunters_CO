@@ -37,40 +37,78 @@ Size:4
 Program Counter:1
 IF
 -----New Clock Cycle-----
------New Clock Cycle-----
 ID
 Size:4
 Program Counter:2
 IF
 -----New Clock Cycle-----
+1
+Hi::0
+Latency:3
+EX
+ID
+Size:4
+Program Counter:3
+IF
 -----New Clock Cycle-----
+2
+Latency:2
+EX
+-----New Clock Cycle-----
+2
+Latency:1
+Source Register:0 x0
+EX
+-----New Clock Cycle-----
+MEM
+2
+Hi::0
+Latency:3
 EX
 ID
 -----New Clock Cycle-----
------New Clock Cycle-----
-MEM
-EX
------New Clock Cycle-----
------New Clock Cycle-----
 Write Back: 3
 WB
-MEM
+3
+Latency:2
+EX
 -----New Clock Cycle-----
+2
+Latency:1
+Source Register:0 x0
+EX
+-----New Clock Cycle-----
+MEM
+2
+
+Stall HI
 -----New Clock Cycle-----
 Write Back: 9
 WB
+2
+
+Stall HI
 -----New Clock Cycle-----
+1
+Hi::3
+Latency:1
+EX
+-----New Clock Cycle-----
+MEM
+-----New Clock Cycle-----
+Write Back: 6
+WB
 
 ---------After Running---------
 REG  Core1     Core2     
 X0     0         0         
 X1     0         0         
 X2     3         0         
-X3     0         0         
+X3     9         0         
 X4     0         0         
-X5     0         0         
+X5     6         0         
 X6     0         0         
-X7     9         0         
+X7     0         0         
 X8     0         0         
 X9     0         0         
 X10    0         0         

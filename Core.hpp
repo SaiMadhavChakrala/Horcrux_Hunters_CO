@@ -11,15 +11,15 @@ public:
 class Registers
 {
 public:
-    int rs1, rs2, rd1, offset, ans, latency,pc;
+    int rs1, rs2, rd1, offset, ans, latency = 0, pc;
     string label;
     string opcode = "";
 };
 class Instruction
 {
 public:
-    string type="";
-    ll latency = 1;
+    string type = "";
+    ll latency = 0;
 };
 struct Variable_p
 {
@@ -45,13 +45,16 @@ public:
     stack<int> rec;
     int regf(string s);
     map<string, Instruction> m;
+    vector<Registers> history;
     void init();
     void stagewise_execute(int memory[], ll &top, int i);
     void write_back();
-    void meme(int memory[],int top,int i);
+    void meme(int memory[], int top, int i);
     void exe();
-    void id_rf(int memory[],ll &top,int i);
+    void id_rf(int memory[], ll &top, int i);
     void ins_fetch();
     void reset(Registers &r);
     void copy(Registers &rd, Registers rs);
+    bool check_stall(Registers r);
+    void stall(int temp);
 };
