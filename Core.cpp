@@ -2,7 +2,25 @@
 #include "Core.hpp"
 #define ll long long int
 using namespace std;
-
+void Core::init()
+{
+    m["addi"].type = "ari";
+    m["add"].type = "ari";
+    m["mul"].type = "ari";
+    m["sub"].type = "ari";
+    m["div"].type = "ari";
+    m["li"].type = "ari";
+    m["mv"].type = "ari";
+    m["lw"].type = "mem";
+    m["la"].type = "mem";
+    m["sw"].type = "mem";
+    m["bgt"].type = "br";
+    m["beq"].type = "br";
+    m["bne"].type = "br";
+    m["blt"].type = "br";
+    m["ble"].type = "br";
+    m["bge"].type = "br";
+}
 int Core::regf(string s)
 {
     if (s[0] == 'X' || s[0] == 'x')
@@ -54,6 +72,100 @@ void Core::go_to(vector<string> &parts, string label)
             }
             pc++;
         }
+    }
+}
+void Core::write_back()
+{
+}
+void Core::meme(int memory[], int top, int i)
+{
+}
+void Core::exe()
+{
+    if (ex.latency == 1)
+        id.opcode = "";
+    ex.latency--;
+}
+void Core::id_rf(int memory[],ll &top,int i)
+{
+    string opcode = "";
+    if (!if_reg.parts.empty())
+        opcode = if_reg.parts[0];
+    if (opcode == ".data")
+    {
+        pc++;
+        segment = ".data";
+        execute(memory, top, i);
+        return;
+    }
+    if_reg.parts.clear();
+}
+void Core::ins_fetch()
+{
+    // vector<string> parts;
+    string s;
+    if (pc >= program.size())
+        return;
+    // cout << "Program counter:" << pc + 1 << endl;
+    for (int i = 0; i < program[pc].size(); i++)
+    {
+        if (program[pc][i] == ',')
+            program[pc][i] = ' ';
+    }
+    stringstream ss(program[pc]);
+    while (getline(ss, s, ' '))
+    {
+        // s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
+        if (s[s.size() - 1] == ':' && if_reg.parts.size() == 0)
+        {
+            if (labels[s.substr(0, s.size() - 1)] == 0)
+            {
+                labels[s.substr(0, s.size() - 1)] = pc + 1;
+                // cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
+            }
+        }
+        else if(s.size()!=0&&s[0]=='#')
+            break;
+        else if (s != "\0")
+            if_reg.parts.push_back(s);
+    }
+    if(if_reg.parts.size()==0)
+    {
+        pc++;
+        ins_fetch();
+    }
+    pc++;
+}
+void Core::stagewise_execute(int memory[], ll &top, int i)
+{
+    if (mem.opcode.size() != 0)
+        write_back();
+    if (ex.opcode.size() != 0)
+    {
+        if (mem.opcode.size() != 0)
+            return;
+        meme(memory, top, i);
+    }
+    if (id.opcode.size() != 0)
+    {
+        if (ex.opcode.size() == 0)
+            ex.latency = m[ex.opcode].latency;
+        if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
+        {
+            exe();
+        }
+        else if (ex.opcode.size() != 0)
+            return;
+    }
+    if (if_reg.parts.size() != 0)
+    {
+        if (id.opcode.size() != 0)
+            return;
+        id_rf(memory,top,i);
+    }
+    if (pc < program[i].size())
+    {
+        ins_fetch();
     }
 }
 void Core::execute(int memory[], ll &top, int i)
