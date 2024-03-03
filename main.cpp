@@ -15,7 +15,6 @@ int main()
     std::string line;
     while (std::getline(file, line))
     {
-
         sim.cores[0].program.push_back(line);
     }
     file.close();

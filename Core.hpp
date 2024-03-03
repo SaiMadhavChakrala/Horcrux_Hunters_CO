@@ -11,13 +11,14 @@ public:
 class Registers
 {
 public:
-    int rs1, rs2, rd1, offset, ans, latency;
-    string opcode = NULL;
+    int rs1, rs2, rd1, offset, ans, latency,pc;
+    string label;
+    string opcode = "";
 };
 class Instruction
 {
 public:
-    string type=NULL;
+    string type="";
     ll latency = 1;
 };
 struct Variable_p
@@ -51,4 +52,6 @@ public:
     void exe();
     void id_rf(int memory[],ll &top,int i);
     void ins_fetch();
+    void reset(Registers &r);
+    void copy(Registers &rd, Registers rs);
 };

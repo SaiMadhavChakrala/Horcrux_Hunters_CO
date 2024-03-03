@@ -37,6 +37,7 @@ int Core::regf(string s)
         return stoi(s.substr(1, s.size())) + 5;
     if (s[0] == 't')
         return stoi(s.substr(1, s.size())) + 25;
+    return -1;
 }
 void Core::go_to(vector<string> &parts, string label)
 {
@@ -74,29 +75,120 @@ void Core::go_to(vector<string> &parts, string label)
         }
     }
 }
+void Core::copy(Registers &rd, Registers rs)
+{
+    rd.ans = rs.ans;
+    rd.label = rs.label;
+    rd.latency = rs.latency;
+    rd.offset = rs.offset;
+    rd.rd1 = rs.rd1;
+    rd.rs1 = rs.rs1;
+    rd.rs2 = rs.rs2;
+    rd.pc = rs.pc;
+    rd.opcode = rs.opcode;
+}
+void Core::reset(Registers &r)
+{
+    r.ans = -1;
+    r.label = "";
+    r.latency = -1;
+    r.offset = -1;
+    r.rd1 = -1;
+    r.rs1 = -1;
+    r.rs2 = -1;
+    r.pc = -1;
+    r.opcode = "";
+}
 void Core::write_back()
 {
+    if (m[mem.opcode].type == "ari")
+    {
+        int &rd = reg[mem.rd1];
+        rd = mem.ans;
+        cout <<"Write Back: "<< reg[mem.rd1] << endl;
+    }
+    reset(mem);
 }
 void Core::meme(int memory[], int top, int i)
 {
+    copy(mem, ex);
+    reset(ex);
 }
 void Core::exe()
 {
+    if (ex.opcode.size() == 0)
+    {
+        copy(ex, id);
+        reset(id);
+    }
     if (ex.latency == 1)
-        id.opcode = "";
+    {
+        if (ex.opcode == "addi")
+        {
+            ex.ans += reg[ex.rs1];
+        }
+        if (ex.opcode == "add")
+        {
+            ex.ans = reg[ex.rs1] + reg[ex.rs2];
+        }
+        if (ex.opcode == "sub")
+        {
+            ex.ans = reg[ex.rs1] - reg[ex.rs2];
+        }
+        if (ex.opcode == "mul")
+        {
+            ex.ans = reg[ex.rs1] * reg[ex.rs2];
+        }
+        if (ex.opcode == "div")
+        {
+            ex.ans = reg[ex.rs1] / reg[ex.rs2];
+        }
+        if (ex.opcode == "mv")
+        {
+            ex.ans = reg[ex.rs1];
+        }
+    }
     ex.latency--;
 }
-void Core::id_rf(int memory[],ll &top,int i)
+void Core::id_rf(int memory[], ll &top, int i)
 {
-    string opcode = "";
+    reset(id);
     if (!if_reg.parts.empty())
-        opcode = if_reg.parts[0];
-    if (opcode == ".data")
+    {
+        id.opcode = if_reg.parts[0];
+        id.pc = pc - 1;
+    }
+    if (id.opcode == ".data")
     {
         pc++;
         segment = ".data";
         execute(memory, top, i);
         return;
+    }
+    if (m[id.opcode].type == "ari")
+    {
+        if (id.opcode == "addi")
+        {
+            id.ans = stoi(if_reg.parts[3]);
+            id.rs1 = regf(if_reg.parts[2]);
+            id.rd1 = regf(if_reg.parts[1]);
+        }
+        else if (id.opcode == "li")
+        {
+            id.ans = stoi(if_reg.parts[2]);
+            id.rd1 = regf(if_reg.parts[1]);
+        }
+        else if (id.opcode == "mv")
+        {
+            id.rd1 = regf(if_reg.parts[1]);
+            id.rs1 = regf(if_reg.parts[2]);
+        }
+        else
+        {
+            id.rs1 = regf(if_reg.parts[2]);
+            id.rs2 = regf(if_reg.parts[3]);
+            id.rd1 = regf(if_reg.parts[1]);
+        }
     }
     if_reg.parts.clear();
 }
@@ -124,12 +216,12 @@ void Core::ins_fetch()
                 // cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
-        else if(s.size()!=0&&s[0]=='#')
+        else if (s.size() != 0 && s[0] == '#')
             break;
         else if (s != "\0")
             if_reg.parts.push_back(s);
     }
-    if(if_reg.parts.size()==0)
+    if (if_reg.parts.size() == 0)
     {
         pc++;
         ins_fetch();
@@ -138,14 +230,22 @@ void Core::ins_fetch()
 }
 void Core::stagewise_execute(int memory[], ll &top, int i)
 {
+    // cout << "Size:" << if_reg.parts.size() << endl;
+    cout << "-----New Clock Cycle-----" << endl;
     if (mem.opcode.size() != 0)
+    {
         write_back();
+        cout << "WB" << endl;
+    }
+    // cout << "HI" << endl;
     if (ex.opcode.size() != 0)
     {
         if (mem.opcode.size() != 0)
             return;
         meme(memory, top, i);
+        cout << "MEM" << endl;
     }
+    // cout << "HI1" << endl;
     if (id.opcode.size() != 0)
     {
         if (ex.opcode.size() == 0)
@@ -156,16 +256,24 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
         }
         else if (ex.opcode.size() != 0)
             return;
+        cout << "EX" << endl;
     }
+    // cout << "HI2" << endl;
+    // cout << "Size:" << if_reg.parts.size() << endl;
     if (if_reg.parts.size() != 0)
     {
+        // cout << "HI" << endl;
         if (id.opcode.size() != 0)
             return;
-        id_rf(memory,top,i);
+        id_rf(memory, top, i);
+        cout << "ID" << endl;
     }
-    if (pc < program[i].size())
+    if (pc < program.size())
     {
         ins_fetch();
+        cout << "Size:" << if_reg.parts.size() << endl;
+        cout << "Program Counter:" << pc << endl;
+        cout << "IF" << endl;
     }
 }
 void Core::execute(int memory[], ll &top, int i)
