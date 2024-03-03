@@ -20,6 +20,22 @@ void Core::init()
     m["blt"].type = "br";
     m["ble"].type = "br";
     m["bge"].type = "br";
+    m["addi"].latency = 3;
+    m["add"].latency = 1;
+    m["mul"].latency = 1;
+    m["sub"].latency = 1;
+    m["div"].latency = 1;
+    m["li"].latency = 1;
+    m["mv"].latency = 1;
+    m["lw"].latency = 1;
+    m["la"].latency = 1;
+    m["sw"].latency = 1;
+    m["bgt"].latency = 1;
+    m["beq"].latency = 1;
+    m["bne"].latency = 1;
+    m["blt"].latency = 1;
+    m["ble"].latency = 1;
+    m["bge"].latency = 1;
 }
 int Core::regf(string s)
 {
@@ -91,7 +107,7 @@ void Core::reset(Registers &r)
 {
     r.ans = -1;
     r.label = "";
-    r.latency = -1;
+    r.latency = 0;
     r.offset = -1;
     r.rd1 = -1;
     r.rs1 = -1;
@@ -99,13 +115,28 @@ void Core::reset(Registers &r)
     r.pc = -1;
     r.opcode = "";
 }
+bool Core::check_stall(Registers rd)
+{
+    cout << history.size() << endl;
+    for (int i = 0; i < history.size(); i++)
+    {
+        if (rd.pc == history[i].pc)
+        {
+            copy(history[i], rd);
+            return false;
+        }
+        else if (rd.rs1 == history[i].rd1 || rd.rs2 == history[i].rd1)
+            return true;
+    }
+    return false;
+}
 void Core::write_back()
 {
     if (m[mem.opcode].type == "ari")
     {
         int &rd = reg[mem.rd1];
         rd = mem.ans;
-        cout <<"Write Back: "<< reg[mem.rd1] << endl;
+        cout << "Write Back: " << reg[mem.rd1] << endl;
     }
     reset(mem);
 }
@@ -118,17 +149,22 @@ void Core::exe()
 {
     if (ex.opcode.size() == 0)
     {
+        cout << "Hi::";
         copy(ex, id);
+        cout << ex.rs1 << endl;
         reset(id);
     }
+    cout << "Latency:" << ex.latency << endl;
     if (ex.latency == 1)
     {
         if (ex.opcode == "addi")
         {
+            cout << "Source Register:" << reg[ex.rs1] << " x" << ex.rs1 << endl;
             ex.ans += reg[ex.rs1];
         }
         if (ex.opcode == "add")
         {
+            cout << "Source registers: " << reg[ex.rs1] << "  " << reg[ex.rs2] << endl;
             ex.ans = reg[ex.rs1] + reg[ex.rs2];
         }
         if (ex.opcode == "sub")
@@ -165,6 +201,7 @@ void Core::id_rf(int memory[], ll &top, int i)
         execute(memory, top, i);
         return;
     }
+    id.latency = m[id.opcode].latency;
     if (m[id.opcode].type == "ari")
     {
         if (id.opcode == "addi")
@@ -190,6 +227,7 @@ void Core::id_rf(int memory[], ll &top, int i)
             id.rd1 = regf(if_reg.parts[1]);
         }
     }
+    history.push_back(id);
     if_reg.parts.clear();
 }
 void Core::ins_fetch()
@@ -198,7 +236,7 @@ void Core::ins_fetch()
     string s;
     if (pc >= program.size())
         return;
-    // cout << "Program counter:" << pc + 1 << endl;
+    // std::cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -213,7 +251,7 @@ void Core::ins_fetch()
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                // cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
+                // std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s.size() != 0 && s[0] == '#')
@@ -228,26 +266,59 @@ void Core::ins_fetch()
     }
     pc++;
 }
+void Core::stall(int temp)
+{
+    if (temp)
+        history.erase(history.begin());
+}
 void Core::stagewise_execute(int memory[], ll &top, int i)
 {
-    // cout << "Size:" << if_reg.parts.size() << endl;
-    cout << "-----New Clock Cycle-----" << endl;
+    // std::cout << "Size:" << if_reg.parts.size() << endl;
+    int temp = 0;
+    if (history.size() > 4)
+    {
+        history.erase(history.begin());
+    }
+    std::cout << "-----New Clock Cycle-----" << endl;
     if (mem.opcode.size() != 0)
     {
         write_back();
-        cout << "WB" << endl;
+        temp = 1;
+        std::cout << "WB" << endl;
     }
-    // cout << "HI" << endl;
+    // std::cout << "HI" << endl;
     if (ex.opcode.size() != 0)
     {
         if (mem.opcode.size() != 0)
+        {
+            stall(temp);
             return;
-        meme(memory, top, i);
-        cout << "MEM" << endl;
+        }
+        if (ex.latency == 0)
+        {
+            meme(memory, top, i);
+            std::cout << "MEM" << endl;
+        }
     }
-    // cout << "HI1" << endl;
-    if (id.opcode.size() != 0)
+    // std::cout << "HI1" << endl;
+    if (id.opcode.size() != 0 || ex.latency != 0)
     {
+        if (ex.opcode.size() != 0)
+        {
+            if (check_stall(ex))
+            {
+                cout << "Stall   Hi...." << endl;
+                stall(temp);
+                return;
+            }
+        }
+        else if (check_stall(id))
+        {
+            cout << endl
+                 << "Stall HI" << endl;
+            stall(temp);
+            return;
+        }
         if (ex.opcode.size() == 0)
             ex.latency = m[ex.opcode].latency;
         if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
@@ -255,26 +326,34 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
             exe();
         }
         else if (ex.opcode.size() != 0)
+        {
+            stall(temp);
             return;
-        cout << "EX" << endl;
+        }
+        std::cout << "EX" << endl;
     }
-    // cout << "HI2" << endl;
-    // cout << "Size:" << if_reg.parts.size() << endl;
+    // std::cout << "HI2" << endl;
+    // std::cout << "Size:" << if_reg.parts.size() << endl;
     if (if_reg.parts.size() != 0)
     {
-        // cout << "HI" << endl;
+        // std::cout << "HI" << endl;
         if (id.opcode.size() != 0)
+        {
+            stall(temp);
             return;
+        }
         id_rf(memory, top, i);
-        cout << "ID" << endl;
+        std::cout << "ID" << endl;
     }
     if (pc < program.size())
     {
         ins_fetch();
-        cout << "Size:" << if_reg.parts.size() << endl;
-        cout << "Program Counter:" << pc << endl;
-        cout << "IF" << endl;
+        std::cout << "Size:" << if_reg.parts.size() << endl;
+        std::cout << "Program Counter:" << pc << endl;
+        std::cout << "IF" << endl;
     }
+    if (temp)
+        history.erase(history.begin());
 }
 void Core::execute(int memory[], ll &top, int i)
 {
@@ -282,7 +361,7 @@ void Core::execute(int memory[], ll &top, int i)
     string s;
     if (pc >= program.size())
         return;
-    // cout << "Program counter:" << pc + 1 << endl;
+    // std::cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -297,7 +376,7 @@ void Core::execute(int memory[], ll &top, int i)
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                // cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
+                // std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s != "\0")
@@ -305,9 +384,9 @@ void Core::execute(int memory[], ll &top, int i)
     }
     // for (auto i : parts)
     // {
-    //     cout << i << endl;
+    //     std::cout << i << endl;
     // }
-    // cout << endl;
+    // std::cout << endl;
     string opcode = "";
     if (!parts.empty())
         opcode = parts[0];
@@ -315,12 +394,12 @@ void Core::execute(int memory[], ll &top, int i)
     {
         segment = ".text";
         pc++;
-        cout << "--------------------------------Memory---------------------------------" << endl;
+        std::cout << "--------------------------------Memory---------------------------------" << endl;
         for (int i = 0; i < 40; i++)
         {
-            cout << memory[i] << " ";
+            std::cout << memory[i] << " ";
         }
-        cout << endl;
+        std::cout << endl;
         return;
     }
     if (opcode == ".data")
