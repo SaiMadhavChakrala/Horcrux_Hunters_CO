@@ -125,7 +125,7 @@ bool Core::check_stall(Registers rd)
             copy(history[i], rd);
             return false;
         }
-        else if (rd.rs1 == history[i].rd1 || rd.rs2 == history[i].rd1)
+        else if ((rd.rs1!=-1&&rd.rs1 == history[i].rd1) || (rd.rs2!=-1&&rd.rs2 == history[i].rd1))
             return true;
     }
     return false;
@@ -151,30 +151,53 @@ void Core::exe()
     {
         cout << "Hi::";
         copy(ex, id);
-        cout << ex.rs1 << endl;
+        cout << ex.rs1 << " " << ex.rs2 << endl;
         if (m[ex.opcode].type == "br")
         {
+            cout << "Branch" << endl;
             // stall(temp);
             vector<string> a;
-            if (ex.opcode == "beq" && ex.rs1 == ex.rs2)
+            if (ex.opcode == "beq" && reg[ex.rs1] == reg[ex.rs2])
             {
                 go_to(a, ex.label);
+                pc++;
                 cout << endl
                      << "Jumped to:" << pc + 1 << endl;
             }
-            else if (ex.opcode == "bgt" && ex.rs1 > ex.rs2)
-                go_to(a, ex.label);
-            else if (ex.opcode == "bne" && ex.rs1 != ex.rs2)
-                go_to(a, ex.label);
-            else if (ex.opcode == "blt" && ex.rs1 < ex.rs2)
-                go_to(a, ex.label);
-            else if (ex.opcode == "bge" && ex.rs1 >= ex.rs2)
-                go_to(a, ex.label);
-            else if (ex.opcode == "ble" && ex.rs1 <= ex.rs2)
-                go_to(a, ex.label);
-            if (ex.pc + 1 != pc)
+            else if (ex.opcode == "bgt" && reg[ex.rs1] > reg[ex.rs2])
             {
-                if_reg.parts.clear();
+                go_to(a, ex.label);
+                pc++;
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
+            }
+            else if (ex.opcode == "bne" && reg[ex.rs1] != reg[ex.rs2])
+            {
+                go_to(a, ex.label);
+                pc++;
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
+            }
+            else if (ex.opcode == "blt" && reg[ex.rs1] < reg[ex.rs2])
+            {
+                go_to(a, ex.label);
+                pc++;
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
+            }
+            else if (ex.opcode == "bge" && reg[ex.rs1] >= reg[ex.rs2])
+            {
+                go_to(a, ex.label);
+                pc++;
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
+            }
+            else if (ex.opcode == "ble" && reg[ex.rs1] <= reg[ex.rs2])
+            {
+                go_to(a, ex.label);
+                pc++;
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
             }
         }
         reset(id);
@@ -258,6 +281,7 @@ void Core::id_rf(int memory[], ll &top, int i)
         id.rs2 = regf(if_reg.parts[2]);
         id.label = if_reg.parts[3];
     }
+    // if (m[id.opcode].type != "br")
     history.push_back(id);
     if_reg.parts.clear();
 }
@@ -288,14 +312,18 @@ void Core::ins_fetch()
         else if (s.size() != 0 && s[0] == '#')
             break;
         else if (s != "\0")
+        {
+            // cout << s << endl;
             if_reg.parts.push_back(s);
-    }
-    if (if_reg.parts.size() == 0)
-    {
-        pc++;
-        ins_fetch();
+        }
     }
     pc++;
+    if (if_reg.parts.size() == 0)
+    {
+        cout << "Program Counter(Line Empty)" << pc + 1 << endl;
+        if_reg.parts.clear();
+        ins_fetch();
+    }
 }
 void Core::stall(int temp)
 {
@@ -365,13 +393,24 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
         if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
         {
             exe();
+            std::cout << "EX" << endl;
+            if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
+            {
+                if (ex.pc + 1 != pc - 1)
+                {
+                    cout << "--FLushing Pipeline--" << ex.pc + 1 << " " << pc + 1 << endl;
+                    if_reg.parts.clear();
+                    stall(temp);
+                    return;
+                }
+            }
         }
         else if (ex.opcode.size() != 0)
         {
             stall(temp);
             return;
         }
-        std::cout << "EX" << endl;
+        
     }
     // std::cout << "HI2" << endl;
     // std::cout << "Size:" << if_reg.parts.size() << endl;
@@ -400,7 +439,7 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
             cout << "HI Madhav" << endl;
             segment = ".data";
             execute(memory, top, i);
-            if_reg.parts.clear();
+            // if_reg.parts.clear();
             ins_fetch();
         }
         std::cout << "Size:" << if_reg.parts.size() << endl;

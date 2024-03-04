@@ -14,9 +14,12 @@ void Processor::run()
     {
         cout << left << setw(7) << "X" + to_string(i) << setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
     }
+    ll i = 0;
     while (cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
     {
+        cout << i++ << endl;
         cores[0].stagewise_execute(memory, top, 0);
+
         // cores[1].stagewise_execute(memory, top, 0);
         // cores[1].stagewise_execute(memory, top, 1);
         // cores[0].execute(memory, top, 0);

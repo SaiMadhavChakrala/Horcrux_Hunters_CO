@@ -1,5 +1,5 @@
-addi a0 a0 1
-loop:
-    addi x4 x4 1
+li a0 1
+loop: 
+  addi x4 x4 1
     beq x4 a0 loop
     addi x4 x4 1
