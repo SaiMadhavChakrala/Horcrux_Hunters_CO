@@ -13,14 +13,14 @@ void Core::init()
     m["mv"].type = "ari";
     m["lw"].type = "mem";
     m["la"].type = "mem";
-    m["sw"].type = "mem";
+    m["sw"].type = "mem1";
     m["bgt"].type = "br";
     m["beq"].type = "br";
     m["bne"].type = "br";
     m["blt"].type = "br";
     m["ble"].type = "br";
     m["bge"].type = "br";
-    m["addi"].latency = 3;
+    m["addi"].latency = 1;
     m["add"].latency = 1;
     m["mul"].latency = 1;
     m["sub"].latency = 1;
@@ -152,6 +152,31 @@ void Core::exe()
         cout << "Hi::";
         copy(ex, id);
         cout << ex.rs1 << endl;
+        if (m[ex.opcode].type == "br")
+        {
+            // stall(temp);
+            vector<string> a;
+            if (ex.opcode == "beq" && ex.rs1 == ex.rs2)
+            {
+                go_to(a, ex.label);
+                cout << endl
+                     << "Jumped to:" << pc + 1 << endl;
+            }
+            else if (ex.opcode == "bgt" && ex.rs1 > ex.rs2)
+                go_to(a, ex.label);
+            else if (ex.opcode == "bne" && ex.rs1 != ex.rs2)
+                go_to(a, ex.label);
+            else if (ex.opcode == "blt" && ex.rs1 < ex.rs2)
+                go_to(a, ex.label);
+            else if (ex.opcode == "bge" && ex.rs1 >= ex.rs2)
+                go_to(a, ex.label);
+            else if (ex.opcode == "ble" && ex.rs1 <= ex.rs2)
+                go_to(a, ex.label);
+            if (ex.pc + 1 != pc)
+            {
+                if_reg.parts.clear();
+            }
+        }
         reset(id);
     }
     cout << "Latency:" << ex.latency << endl;
@@ -196,7 +221,7 @@ void Core::id_rf(int memory[], ll &top, int i)
     }
     if (id.opcode == ".data")
     {
-        pc++;
+        // pc++;
         segment = ".data";
         execute(memory, top, i);
         return;
@@ -227,6 +252,12 @@ void Core::id_rf(int memory[], ll &top, int i)
             id.rd1 = regf(if_reg.parts[1]);
         }
     }
+    if (m[id.opcode].type == "br")
+    {
+        id.rs1 = regf(if_reg.parts[1]);
+        id.rs2 = regf(if_reg.parts[2]);
+        id.label = if_reg.parts[3];
+    }
     history.push_back(id);
     if_reg.parts.clear();
 }
@@ -251,7 +282,7 @@ void Core::ins_fetch()
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                // std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
+                std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s.size() != 0 && s[0] == '#')
@@ -270,11 +301,14 @@ void Core::stall(int temp)
 {
     if (temp)
         history.erase(history.begin());
+    // if (temp2)
+    //     history.erase(history.begin());
 }
 void Core::stagewise_execute(int memory[], ll &top, int i)
 {
     // std::cout << "Size:" << if_reg.parts.size() << endl;
     int temp = 0;
+    int temp2 = 0;
     if (history.size() > 4)
     {
         history.erase(history.begin());
@@ -298,7 +332,14 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
         {
             meme(memory, top, i);
             std::cout << "MEM" << endl;
+            if (m[mem.opcode].type == "mem1")
+                temp2 = 1;
         }
+        // if (m[mem.opcode].type == "br")
+        // {
+        //     stall(temp);
+        //     return;
+        // }
     }
     // std::cout << "HI1" << endl;
     if (id.opcode.size() != 0 || ex.latency != 0)
@@ -344,10 +385,24 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
         }
         id_rf(memory, top, i);
         std::cout << "ID" << endl;
+        // if(m[id.opcode].type=="br")
+        // {
+        //     stall(temp);
+        //     return;
+        // }
     }
     if (pc < program.size())
     {
         ins_fetch();
+        if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
+        {
+            // pc++;
+            cout << "HI Madhav" << endl;
+            segment = ".data";
+            execute(memory, top, i);
+            if_reg.parts.clear();
+            ins_fetch();
+        }
         std::cout << "Size:" << if_reg.parts.size() << endl;
         std::cout << "Program Counter:" << pc << endl;
         std::cout << "IF" << endl;
@@ -361,7 +416,7 @@ void Core::execute(int memory[], ll &top, int i)
     string s;
     if (pc >= program.size())
         return;
-    // std::cout << "Program counter:" << pc + 1 << endl;
+    std::cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -400,6 +455,7 @@ void Core::execute(int memory[], ll &top, int i)
             std::cout << memory[i] << " ";
         }
         std::cout << endl;
+        cout << ".Text begins form here" << endl;
         return;
     }
     if (opcode == ".data")
@@ -429,7 +485,7 @@ void Core::execute(int memory[], ll &top, int i)
                 for (int i = top; i < m + n - 2; i++)
                 {
                     memory[i] = stoi(parts[i - m + 2]);
-                    // cout << memory[i] << " ";
+                    cout << memory[i] << " ";
                     // cout << "top:" << top << endl;
                     top++;
                 }

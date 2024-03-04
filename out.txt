@@ -38,80 +38,66 @@ Program Counter:1
 IF
 -----New Clock Cycle-----
 ID
+The Label "loop:" is in Line no. 2
 Size:4
-Program Counter:2
+Program Counter:4
 IF
 -----New Clock Cycle-----
 1
-Hi::0
-Latency:3
+Hi::10
+Latency:1
+Source Register:0 x10
 EX
 ID
 Size:4
-Program Counter:3
+Program Counter:5
 IF
------New Clock Cycle-----
-2
-Latency:2
-EX
------New Clock Cycle-----
-2
-Latency:1
-Source Register:0 x0
-EX
 -----New Clock Cycle-----
 MEM
 2
-Hi::0
-Latency:3
+Hi::4
+Latency:1
+Source Register:0 x4
 EX
 ID
 -----New Clock Cycle-----
-Write Back: 3
+Write Back: 1
 WB
+MEM
 3
-Latency:2
-EX
------New Clock Cycle-----
-2
-Latency:1
-Source Register:0 x0
-EX
------New Clock Cycle-----
-MEM
-2
 
 Stall HI
 -----New Clock Cycle-----
-Write Back: 9
+Write Back: 1
 WB
 2
 
 Stall HI
 -----New Clock Cycle-----
 1
-Hi::3
+Hi::4
 Latency:1
+Source Register:1 x4
 EX
 -----New Clock Cycle-----
 MEM
 -----New Clock Cycle-----
-Write Back: 6
+Write Back: 2
 WB
 
 ---------After Running---------
 REG  Core1     Core2     
 X0     0         0         
 X1     0         0         
-X2     3         0         
-X3     9         0         
-X4     0         0         
-X5     6         0         
+X2     0         0         
+X3     0         0         
+X4     2         0         
+X5     0         0         
 X6     0         0         
 X7     0         0         
 X8     0         0         
 X9     0         0         
-X10    0         0         
+X10    1         0         
 X11    0         0         
 X12    0         0         
 X13    0         0         
