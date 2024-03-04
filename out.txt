@@ -34,125 +34,111 @@ X30    0         0
 X31    0         0         
 0
 -----New Clock Cycle-----
-Size:3
 Program Counter:1
+Id: Ex: Ex-Latency:0 Mem:
+.data
+HI Madhav
+1 2 3 --------------------------------Memory---------------------------------
+1 2 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+.Text begins form here
+la
+x5
+array
+Size:3
 IF
 1
 -----New Clock Cycle-----
+Program Counter:5
+Id: Ex: Ex-Latency:0 Mem:
+Opcode:la
+5 array
 ID
-The Label "loop:" is in Line no. 2
-Program Counter(Line Empty)3
-Size:4
-Program Counter:3
+li
+x6
+5
+Size:3
 IF
 2
 -----New Clock Cycle-----
+Program Counter:6
+Id:la Ex: Ex-Latency:0 Mem:
 1
 Hi::-1 -1
 Latency:1
 EX
+Opcode:li
 ID
-Size:4
-Program Counter:4
+sw
+x5
+0(x5)
+Size:3
 IF
 3
 -----New Clock Cycle-----
+Program Counter:7
+Id:li Ex:la Ex-Latency:0 Mem:
+Hi Madhav...
 MEM
 2
-Hi::4 -1
+Hi::-1 -1
 Latency:1
-Source Register:0 x4
 EX
+Opcode:sw
+5 5
 ID
+addi
+x5
+x5
+1
 Size:4
-Program Counter:5
 IF
 4
 -----New Clock Cycle-----
-Write Back: 1
+Program Counter:8
+Id:sw Ex:li Ex-Latency:0 Mem:la
 WB
+Hi Madhav...
 MEM
 3
 
 Stall HI
 5
 -----New Clock Cycle-----
-Write Back: 1
+Program Counter:8
+Id:sw Ex: Ex-Latency:0 Mem:li
+Write Back: 5
 WB
 2
-
-Stall HI
+Hi::5 5
+Latency:1
+EX
+Opcode:addi
+ID
 6
 -----New Clock Cycle-----
-1
-Hi::4 10
-Branch
-
-Jumped to:2
+Program Counter:8
+Id:addi Ex:sw Ex-Latency:0 Mem:
+Hi Madhav...
+5
+6535840
+MEM
+2
+Hi::5 -1
 Latency:1
+Source Register:6535840 x5
 EX
---FLushing Pipeline--4 2
 7
 -----New Clock Cycle-----
+Program Counter:8
+Id: Ex:addi Ex-Latency:0 Mem:sw
+WB
+Hi Madhav...
 MEM
-Program Counter(Line Empty)3
-Size:4
-Program Counter:3
-IF
 8
 -----New Clock Cycle-----
-WB
-ID
-Size:4
-Program Counter:4
-IF
-9
------New Clock Cycle-----
-1
-Hi::4 -1
-Latency:1
-Source Register:1 x4
-EX
-ID
-Size:4
-Program Counter:5
-IF
-10
------New Clock Cycle-----
-MEM
-2
-
-Stall HI
-11
------New Clock Cycle-----
-Write Back: 2
-WB
-2
-
-Stall HI
-12
------New Clock Cycle-----
-1
-Hi::4 10
-Branch
-Latency:1
-EX
-ID
-13
------New Clock Cycle-----
-MEM
-2
-Hi::4 -1
-Latency:1
-Source Register:2 x4
-EX
-14
------New Clock Cycle-----
-WB
-MEM
-15
------New Clock Cycle-----
-Write Back: 3
+Program Counter:8
+Id: Ex: Ex-Latency:0 Mem:addi
+Write Back: 6535841
 WB
 
 ---------After Running---------
@@ -161,13 +147,13 @@ X0     0         0
 X1     0         0         
 X2     0         0         
 X3     0         0         
-X4     3         0         
-X5     0         0         
-X6     0         0         
+X4     0         0         
+X5     6535841   0         
+X6     5         0         
 X7     0         0         
 X8     0         0         
 X9     0         0         
-X10    1         0         
+X10    0         0         
 X11    0         0         
 X12    0         0         
 X13    0         0         
@@ -190,4 +176,4 @@ X29    0         0
 X30    0         0         
 X31    0         0         
 --------------------------------Memory---------------------------------
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+6535840 2 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
