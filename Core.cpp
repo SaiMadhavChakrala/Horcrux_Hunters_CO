@@ -20,6 +20,9 @@ void Core::init()
     m["blt"].type = "br";
     m["ble"].type = "br";
     m["bge"].type = "br";
+    m["j"].type = "jmp";
+    m["jal"].type = "jmp";
+    m["j"].latency = 1;
     m["addi"].latency = 1;
     m["add"].latency = 1;
     m["mul"].latency = 1;
@@ -151,6 +154,25 @@ void Core::write_back()
 void Core::meme(int memory[], int top, int i)
 {
     copy(mem, ex);
+    if (mem.opcode == "j")
+    {
+        vector<string> a;
+        go_to(a, ex.label);
+        pc++;
+        cout << "Jumped to:" << pc << endl;
+        cout << "Mem.pc:" << mem.pc + 1 << endl;
+        if (mem.pc + 1 != pc && mem.pc + 2 != pc)
+        {
+            reset(id);
+            if_reg.parts.clear();
+        }
+        if (mem.pc + 1 == pc)
+        {
+            cout << "Jumped to:" << pc + 1 << endl;
+            reset(id);
+            if_reg.parts.clear();
+        }
+    }
     if (mem.opcode == "sw")
     {
         int location = mem.rs2;
@@ -260,7 +282,7 @@ void Core::id_rf(int memory[], ll &top, int i)
     {
         id.opcode = if_reg.parts[0];
         cout << "Opcode:" << id.opcode << endl;
-        id.pc = pc - 1;
+        id.pc = if_reg.pc;
     }
     if (id.opcode == ".data")
     {
@@ -270,6 +292,13 @@ void Core::id_rf(int memory[], ll &top, int i)
         return;
     }
     id.latency = m[id.opcode].latency;
+    if (m[id.opcode].type == "jmp")
+    {
+        if (id.opcode == "j")
+        {
+            id.label = if_reg.parts[1];
+        }
+    }
     if (m[id.opcode].type == "mem1")
     {
         // reset(id);
@@ -357,10 +386,11 @@ void Core::ins_fetch()
             break;
         else if (s != "\0")
         {
-            cout << s << endl;
+            // cout << s << endl;
             if_reg.parts.push_back(s);
         }
     }
+    if_reg.pc = pc;
     pc++;
     if (if_reg.parts.size() == 0)
     {
@@ -410,6 +440,17 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
             std::cout << "MEM" << endl;
             if (m[mem.opcode].type == "mem1")
                 temp2 = 1;
+            if (mem.opcode == "j")
+            {
+                if (mem.pc + 2 == pc)
+                {
+                    cout << "HI>>" << endl;
+                    reset(id);
+                    stall(temp);
+                    pc++;
+                    return;
+                }
+            }
         }
         // if (m[mem.opcode].type == "br")
         // {
@@ -469,6 +510,12 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
             stall(temp);
             return;
         }
+        if (ex.opcode == "j" && pc == ex.pc)
+        {
+            stall(temp);
+            return;
+        }
+
         id_rf(memory, top, i);
         std::cout << "ID" << endl;
         // if(m[id.opcode].type=="br")

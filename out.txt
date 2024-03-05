@@ -1,3 +1,6 @@
+1:j loop
+2:    addi x15 x15 1
+3:    loop:  addi x16 x16 2
 -------Before running-------
 REG  Core1     Core2     
 X0     0         0         
@@ -36,109 +39,65 @@ X31    0         0
 -----New Clock Cycle-----
 Program Counter:1
 Id: Ex: Ex-Latency:0 Mem:
-.data
-HI Madhav
-1 2 3 --------------------------------Memory---------------------------------
-1 2 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-.Text begins form here
-la
-x5
-array
-Size:3
+Size:2
 IF
 1
 -----New Clock Cycle-----
-Program Counter:5
+Program Counter:2
 Id: Ex: Ex-Latency:0 Mem:
-Opcode:la
-5 array
+Opcode:j
 ID
-li
-x6
-5
-Size:3
-IF
-2
------New Clock Cycle-----
-Program Counter:6
-Id:la Ex: Ex-Latency:0 Mem:
-1
-Hi::-1 -1
-Latency:1
-EX
-Opcode:li
-ID
-sw
-x5
-0(x5)
-Size:3
-IF
-3
------New Clock Cycle-----
-Program Counter:7
-Id:li Ex:la Ex-Latency:0 Mem:
-Hi Madhav...
-MEM
-2
-Hi::-1 -1
-Latency:1
-EX
-Opcode:sw
-5 5
-ID
-addi
-x5
-x5
-1
 Size:4
 IF
-4
------New Clock Cycle-----
-Program Counter:8
-Id:sw Ex:li Ex-Latency:0 Mem:la
-WB
-Hi Madhav...
-MEM
-3
-
-Stall HI
-5
------New Clock Cycle-----
-Program Counter:8
-Id:sw Ex: Ex-Latency:0 Mem:li
-Write Back: 5
-WB
 2
-Hi::5 5
+-----New Clock Cycle-----
+Program Counter:3
+Id:j Ex: Ex-Latency:0 Mem:
+1
+Hi::-1 -1
 Latency:1
 EX
 Opcode:addi
 ID
+The Label "loop:" is in Line no. 3
+Size:4
+IF
+3
+-----New Clock Cycle-----
+Program Counter:4
+Id:addi Ex:j Ex-Latency:0 Mem:
+Hi Madhav...
+Jumped to:2
+Mem.pc:1
+MEM
+HI>>
+4
+-----New Clock Cycle-----
+Program Counter:4
+Id: Ex: Ex-Latency:0 Mem:j
+WB
+Opcode:addi
+ID
+5
+-----New Clock Cycle-----
+Program Counter:4
+Id:addi Ex: Ex-Latency:0 Mem:
+2
+Hi::16 -1
+Latency:1
+Source Register:0 x16
+EX
 6
 -----New Clock Cycle-----
-Program Counter:8
-Id:addi Ex:sw Ex-Latency:0 Mem:
+Program Counter:4
+Id: Ex:addi Ex-Latency:0 Mem:
 Hi Madhav...
-5
-6535840
 MEM
-2
-Hi::5 -1
-Latency:1
-Source Register:6535840 x5
-EX
 7
 -----New Clock Cycle-----
-Program Counter:8
-Id: Ex:addi Ex-Latency:0 Mem:sw
-WB
-Hi Madhav...
-MEM
-8
------New Clock Cycle-----
-Program Counter:8
+Program Counter:4
 Id: Ex: Ex-Latency:0 Mem:addi
-Write Back: 6535841
+Write Back: 2
 WB
 
 ---------After Running---------
@@ -148,8 +107,8 @@ X1     0         0
 X2     0         0         
 X3     0         0         
 X4     0         0         
-X5     6535841   0         
-X6     5         0         
+X5     0         0         
+X6     0         0         
 X7     0         0         
 X8     0         0         
 X9     0         0         
@@ -159,7 +118,7 @@ X12    0         0
 X13    0         0         
 X14    0         0         
 X15    0         0         
-X16    0         0         
+X16    2         0         
 X17    0         0         
 X18    0         0         
 X19    0         0         
@@ -176,4 +135,4 @@ X29    0         0
 X30    0         0         
 X31    0         0         
 --------------------------------Memory---------------------------------
-6535840 2 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
