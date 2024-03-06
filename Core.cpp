@@ -119,6 +119,16 @@ void Core::reset(Registers &r)
     r.pc = -1;
     r.opcode = "";
 }
+void Core::rev_HisDelete(int temp)
+{
+    for (int i = history.size() - 1; i >= 0;i--)
+    {
+        if(temp==history[i].pc)
+        {
+            history.erase(history.begin() + i);
+        }
+    }
+}
 bool Core::check_stall(Registers rd)
 {
     cout << history.size() << endl;
@@ -176,12 +186,14 @@ void Core::meme(int memory[], int top, int i)
         cout << "Mem.pc:" << mem.pc + 1 << endl;
         if (mem.pc + 1 != pc && mem.pc + 2 != pc)
         {
+            rev_HisDelete(id.pc);
             reset(id);
             if_reg.parts.clear();
         }
         if (mem.pc + 1 == pc)
         {
             cout << "Jumped to:" << pc + 1 << endl;
+            rev_HisDelete(id.pc);
             reset(id);
             if_reg.parts.clear();
         }
@@ -300,7 +312,7 @@ void Core::id_rf(int memory[], ll &top, int i)
     if (!if_reg.parts.empty())
     {
         id.opcode = if_reg.parts[0];
-        cout << "Opcode:" << id.opcode << endl;
+        // cout << "Opcode:" << id.opcode << endl;
         id.pc = if_reg.pc;
     }
     if (id.opcode == ".data")
@@ -454,6 +466,14 @@ void Core::stall(vector<int> temp)
                     cout << program[temp[i]] << endl;
                     cout << "History Size:" << history.size() << endl;
                     history.erase(history.begin() + j);
+                    // if (temp[i] == 24)
+                    {
+                        cout << "Remaining History" << endl;
+                        for (auto p : history)
+                        {
+                            cout << program[p.pc] << endl;
+                        }
+                    }
                     break;
                 }
             }
@@ -493,7 +513,7 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
         }
         if (ex.latency == 0)
         {
-            cout << "Hi Madhav..." << endl;
+            // cout << "Hi Madhav..." << endl;
             meme(memory, top, i);
             std::cout << "MEM" << endl;
             cout << program[mem.pc] << endl;
@@ -504,6 +524,7 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
                 if (mem.pc + 2 == pc)
                 {
                     cout << "HI>>" << endl;
+                    rev_HisDelete(id.pc);
                     reset(id);
                     stall(temp);
                     pc++;
@@ -578,6 +599,7 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
 
         id_rf(memory, top, i);
         std::cout << "ID" << endl;
+        cout << program[id.pc] << endl;
         // if(m[id.opcode].type=="br")
         // {
         //     stall(temp);

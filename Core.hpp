@@ -58,4 +58,5 @@ public:
     void copy(Registers &rd, Registers rs);
     bool check_stall(Registers r);
     void stall(vector<int> temp);
+    void rev_HisDelete(int temp);
 };
