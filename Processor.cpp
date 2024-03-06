@@ -18,7 +18,7 @@ void Processor::run()
     while (cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
     {
         cout << i++ << endl;
-        cores[0].stagewise_execute(memory, top, 1);
+        cores[0].stagewise_execute(memory, top, 0);
         // cout << "--------------------------------Memory---------------------------------" << endl;
         // for (int i = 0; i < 40; i++)
         // {
