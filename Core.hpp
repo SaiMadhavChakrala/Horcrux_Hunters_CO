@@ -48,11 +48,11 @@ public:
     map<string, Instruction> m;
     vector<Registers> history;
     void init();
-    void stagewise_execute(int memory[], ll &top, int i);
-    void write_back();
-    void meme(int memory[], int top, int i);
-    void exe();
-    void id_rf(int memory[], ll &top, int i);
+    void stagewise_execute(int memory[], ll &top, int ind);
+    void write_back(int ind);
+    void meme(int memory[], int top, int ind);
+    void exe(int ind);
+    void id_rf(int memory[], ll &top, int ind);
     void ins_fetch();
     void reset(Registers &r);
     void copy(Registers &rd, Registers rs);
