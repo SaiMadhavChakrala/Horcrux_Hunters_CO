@@ -1,4 +1,32 @@
-j loop
-    addi x15 x15 1
-    loop: 
-addi x16 x16 2
+.data
+base: .word 4,3,2,1
+.text
+start:
+    li x1 0
+    li x2 0
+    li x3 2
+    li x19 3
+    li x18 4
+    la x16 base
+    la x17 base
+    la x21 base
+    la x20 base
+    loop:
+        addi x2 x1 1
+        addi x16 x20 0
+        addi x15 x20 4
+        loop1:
+            beq x18 x2 exit
+            lw x5 0(x16)
+            lw x6 0(x15)
+            blt x5 x6 exit2
+            sw x5 0(x15)
+            sw x6 0(x16)
+            exit2: 
+            addi x15 x15 4
+            addi x2 x2 1
+            j loop1
+        exit:
+        addi x1 x1 1
+        addi x20 x20 4
+        bne x1 x19 loop

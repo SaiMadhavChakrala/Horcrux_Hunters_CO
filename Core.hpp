@@ -57,5 +57,5 @@ public:
     void reset(Registers &r);
     void copy(Registers &rd, Registers rs);
     bool check_stall(Registers r);
-    void stall(int temp);
+    void stall(vector<int> temp);
 };
