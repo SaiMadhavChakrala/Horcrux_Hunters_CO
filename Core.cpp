@@ -497,6 +497,7 @@ void Core::stagewise_execute(int memory[], ll &top, int i)
     cout << "Id:" << id.opcode << " Ex:" << ex.opcode << " Ex-Latency:" << ex.latency << " Mem:" << mem.opcode << endl;
     if (mem.opcode.size() != 0)
     {
+        if(i)
         temp.push_back(mem.pc);
         std::cout << "WB" << endl;
         cout << program[mem.pc] << endl;
