@@ -7,7 +7,7 @@ class IF
 public:
     vector<string> parts;
     void split(int memory, ll &top, int i);
-    int pc=-1;
+    int pc = -1;
 };
 class Registers
 {
@@ -34,6 +34,7 @@ class Core
 public:
     Registers id, ex, mem;
     IF if_reg;
+    long long int n_ins = 0, clock = 0;
     int reg[32] = {0};
     int pc = 0;
     vector<string> program;
