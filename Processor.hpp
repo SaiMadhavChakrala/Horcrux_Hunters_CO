@@ -8,7 +8,7 @@ public:
     Core cores[2];
     long long top = 0;
     // void upload(Core cores[]);
-    void run();
+    void run(int d);
 
     // Add any other member functions or data members if needed
 };
