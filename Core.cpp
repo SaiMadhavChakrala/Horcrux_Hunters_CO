@@ -131,7 +131,6 @@ void Core::rev_HisDelete(int temp)
 }
 bool Core::check_stall(Registers rd)
 {
-    cout << history.size() << endl;
     for (int i = 0; i < history.size(); i++)
     {
         if (rd.pc == history[i].pc)
@@ -141,7 +140,6 @@ bool Core::check_stall(Registers rd)
         }
         else if ((rd.rs1 != -1 && rd.rs1 == history[i].rd1) || (rd.rs2 != -1 && rd.rs2 == history[i].rd1))
         {
-            cout << "Opcode:" << history[i].opcode << " rd.rs1:" << rd.rs1 << " rd.rs2:" << rd.rs2 << endl;
             return true;
         }
     }
@@ -155,7 +153,6 @@ void Core::write_back(int ind)
         {
             int &rd = reg[mem.rd1];
             rd = mem.ans;
-            cout << "Write Back: " << reg[mem.rd1] << endl;
         }
         if (m[mem.opcode].type == "mem")
         {
@@ -186,9 +183,6 @@ void Core::meme(int memory[], int top, int ind)
             vector<string> a;
             go_to(a, ex.label);
             pc++;
-            cout << "Jumped to:" << pc + 1 << endl;
-            cout << "Line:" << program[pc] << endl;
-            cout << "Mem.pc:" << mem.pc + 1 << endl;
             if (mem.pc + 1 != pc && mem.pc + 2 != pc)
             {
                 rev_HisDelete(id.pc);
@@ -197,7 +191,6 @@ void Core::meme(int memory[], int top, int ind)
             }
             if (mem.pc + 1 == pc)
             {
-                cout << "Jumped to:" << pc + 1 << endl;
                 rev_HisDelete(id.pc);
                 reset(id);
                 if_reg.parts.clear();
@@ -206,8 +199,6 @@ void Core::meme(int memory[], int top, int ind)
         if (mem.opcode == "sw")
         {
             int location = mem.rs2;
-            cout << location << endl;
-            cout << reg[location] << endl;
             location = (reg[location] - (int)memory) / 4;
             int &rd1 = memory[location + mem.offset / 4];
             rd1 = reg[mem.rs1];
@@ -223,9 +214,6 @@ void Core::meme(int memory[], int top, int ind)
             vector<string> a;
             go_to(a, ex.label);
             pc++;
-            cout << "Jumped to:" << pc + 1 << endl;
-            cout << "Line:" << program[pc] << endl;
-            cout << "Mem.pc:" << mem.pc + 1 << endl;
             if (mem.pc + 1 != pc && mem.pc + 2 != pc)
             {
                 rev_HisDelete(id.pc);
@@ -234,7 +222,6 @@ void Core::meme(int memory[], int top, int ind)
             }
             if (mem.pc + 1 == pc)
             {
-                cout << "Jumped to:" << pc + 1 << endl;
                 rev_HisDelete(id.pc);
                 reset(id);
                 if_reg.parts.clear();
@@ -243,8 +230,6 @@ void Core::meme(int memory[], int top, int ind)
         if (mem.opcode == "sw")
         {
             int location = mem.rs2;
-            cout << location << endl;
-            cout << reg[location] << endl;
             location = (reg[location] - (int)memory) / 4;
             int &rd1 = memory[location + mem.offset / 4];
             rd1 = reg[mem.rs1];
@@ -255,15 +240,11 @@ void Core::meme(int memory[], int top, int ind)
         }
         if (mem.opcode == "lw")
         {
-            cout << "rd1: x" << mem.rd1 << " ex.offset:" << mem.offset << " rs1: x" << ex.rs1 << endl;
-            cout << "Hi.. hello" << endl;
-            cout << (int)memory << " " << reg[ex.rd1] << endl;
             int &rd = reg[ex.rd1];
             if (ex.rs1 != -1)
                 rd = *((int *)(reg[ex.rs1] + ex.offset));
             else
                 rd = variables[ex.label].value;
-            cout << "Hi.. hello" << endl;
         }
     }
     reset(ex);
@@ -274,76 +255,51 @@ void Core::exe(int ind)
     {
         if (ex.opcode.size() == 0)
         {
-            cout << "Hi::";
             copy(ex, id);
-            cout << ex.rs1 << " " << ex.rs2 << endl;
             if (m[ex.opcode].type == "br")
             {
-                cout << "Branch" << endl;
-                // stall(temp);
                 vector<string> a;
                 if (ex.opcode == "beq" && reg[ex.rs1] == reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bgt" && reg[ex.rs1] > reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bne" && reg[ex.rs1] != reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "blt" && reg[ex.rs1] < reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bge" && reg[ex.rs1] >= reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "ble" && reg[ex.rs1] <= reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
             }
             reset(id);
         }
-        cout << "Latency:" << ex.latency << endl;
         if (ex.latency == 1)
         {
             if (ex.opcode == "addi")
             {
-                cout << "Source Register:" << reg[ex.rs1] << " x" << ex.rs1 << endl;
                 ex.ans += reg[ex.rs1];
             }
             if (ex.opcode == "add")
             {
-                cout << "Source registers: " << reg[ex.rs1] << "  " << reg[ex.rs2] << endl;
                 ex.ans = reg[ex.rs1] + reg[ex.rs2];
             }
             if (ex.opcode == "sub")
@@ -368,76 +324,51 @@ void Core::exe(int ind)
     {
         if (ex.opcode.size() == 0)
         {
-            cout << "Hi::";
             copy(ex, id);
-            cout << ex.rs1 << " " << ex.rs2 << endl;
             if (m[ex.opcode].type == "br")
             {
-                cout << "Branch" << endl;
-                // stall(temp);
                 vector<string> a;
                 if (ex.opcode == "beq" && reg[ex.rs1] == reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bgt" && reg[ex.rs1] > reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bne" && reg[ex.rs1] != reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "blt" && reg[ex.rs1] < reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "bge" && reg[ex.rs1] >= reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
                 else if (ex.opcode == "ble" && reg[ex.rs1] <= reg[ex.rs2])
                 {
                     go_to(a, ex.label);
                     pc++;
-                    cout << endl
-                         << "Jumped to:" << pc + 1 << endl;
-                    cout << "Line:" << program[pc] << endl;
                 }
             }
             reset(id);
         }
-        cout << "Latency:" << ex.latency << endl;
         if (ex.latency == 1)
         {
             if (ex.opcode == "addi")
             {
-                cout << "Source Register:" << reg[ex.rs1] << " x" << ex.rs1 << endl;
                 ex.ans += reg[ex.rs1];
             }
             if (ex.opcode == "add")
             {
-                cout << "Source registers: " << reg[ex.rs1] << "  " << reg[ex.rs2] << endl;
                 ex.ans = reg[ex.rs1] + reg[ex.rs2];
             }
             if (ex.opcode == "sub")
@@ -460,7 +391,6 @@ void Core::exe(int ind)
             {
                 int &rd = reg[ex.rd1];
                 rd = ex.ans;
-                cout << "Write Back: " << reg[ex.rd1] << endl;
             }
             if (ex.opcode == "la")
             {
@@ -484,12 +414,10 @@ void Core::id_rf(int memory[], ll &top, int ind)
     if (!if_reg.parts.empty())
     {
         id.opcode = if_reg.parts[0];
-        // cout << "Opcode:" << id.opcode << endl;
         id.pc = if_reg.pc;
     }
     if (id.opcode == ".data")
     {
-        // pc++;
         segment = ".data";
         execute(memory, top, ind);
         return;
@@ -504,7 +432,6 @@ void Core::id_rf(int memory[], ll &top, int ind)
     }
     if (m[id.opcode].type == "mem1")
     {
-        // reset(id);
         vector<string> source;
         string s;
         stringstream ss(if_reg.parts[2]);
@@ -515,7 +442,6 @@ void Core::id_rf(int memory[], ll &top, int ind)
         id.offset = stoi(source[0]);
         id.rs1 = regf(if_reg.parts[1]);
         id.rs2 = regf(source[1].substr(0, source[1].size() - 1));
-        cout << id.rs1 << " " << id.rs2 << endl;
     }
     if (m[id.opcode].type == "mem")
     {
@@ -523,7 +449,6 @@ void Core::id_rf(int memory[], ll &top, int ind)
         {
             id.label = if_reg.parts[2];
             id.rd1 = regf(if_reg.parts[1]);
-            cout << id.rd1 << " " << id.label << endl;
         }
         if (id.opcode == "lw")
         {
@@ -531,7 +456,6 @@ void Core::id_rf(int memory[], ll &top, int ind)
             if (variables[if_reg.parts[2]].data_type == ".word")
             {
                 id.label = if_reg.parts[2];
-                // cout << "Hi" << endl;
             }
             else
             {
@@ -545,8 +469,6 @@ void Core::id_rf(int memory[], ll &top, int ind)
                 id.offset = stoi(source[0]);
                 id.rs1 = regf(source[1].substr(0, source[1].size() - 1));
             }
-            cout << "Load Word" << endl;
-            cout << "rd1:" << id.rd1 << " rs1:" << id.rs1 << " offset:" << id.offset << endl;
         }
     }
     if (m[id.opcode].type == "ari")
@@ -580,17 +502,14 @@ void Core::id_rf(int memory[], ll &top, int ind)
         id.rs2 = regf(if_reg.parts[2]);
         id.label = if_reg.parts[3];
     }
-    // if (m[id.opcode].type != "br")
     history.push_back(id);
     if_reg.parts.clear();
 }
 void Core::ins_fetch()
 {
-    // vector<string> parts;
     string s;
     if (pc >= program.size())
         return;
-    // std::cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -599,20 +518,17 @@ void Core::ins_fetch()
     stringstream ss(program[pc]);
     while (getline(ss, s, ' '))
     {
-        // s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
         if (s[s.size() - 1] == ':' && if_reg.parts.size() == 0)
         {
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s.size() != 0 && s[0] == '#')
             break;
         else if (s != "\0")
         {
-            // cout << s << endl;
             if_reg.parts.push_back(s);
         }
     }
@@ -620,7 +536,6 @@ void Core::ins_fetch()
     pc++;
     if (if_reg.parts.size() == 0)
     {
-        cout << "Program Counter(Line Empty)" << pc + 1 << endl;
         if_reg.parts.clear();
         ins_fetch();
     }
@@ -636,16 +551,10 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
-                    cout << "History Being Erased:" << endl;
-                    cout << program[temp[i]] << endl;
-                    cout << "History Size:" << history.size() << endl;
                     history.erase(history.begin() + j);
-                    // if (temp[i] == 24)
                     {
-                        cout << "Remaining History" << endl;
                         for (auto p : history)
                         {
-                            cout << program[p.pc] << endl;
                         }
                     }
                     break;
@@ -653,13 +562,10 @@ void Core::stall(vector<int> temp)
             }
         }
     }
-    // history.erase(history.begin());
-    // if (temp2)
-    //     history.erase(history.begin());
 }
 void Core::stagewise_execute(int memory[], ll &top, int ind)
 {
-    // std::cout << "Size:" << if_reg.parts.size() << endl;
+    clock++;
     if (ind)
     {
         vector<int> temp;
@@ -668,38 +574,28 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
         {
             history.erase(history.begin());
         }
-        std::cout << "-----New Clock Cycle-----" << endl;
-        cout << "Program Counter:" << pc + 1 << endl;
-        cout << "Id:" << id.opcode << " Ex:" << ex.opcode << " Ex-Latency:" << ex.latency << " Mem:" << mem.opcode << endl;
         if (mem.opcode.size() != 0)
         {
             temp.push_back(mem.pc);
-            std::cout << "WB" << endl;
-            cout << program[mem.pc] << endl;
+            n_ins++;
             write_back(ind);
         }
-        std::cout << "HI" << endl;
         if (ex.opcode.size() != 0)
         {
             if (mem.opcode.size() != 0)
             {
                 stall(temp);
-                cout << "Hi..Hello" << endl;
                 return;
             }
             if (ex.latency == 0)
             {
-                // cout << "Hi Madhav..." << endl;
                 meme(memory, top, ind);
-                std::cout << "MEM" << endl;
-                cout << program[mem.pc] << endl;
                 if (m[mem.opcode].type == "mem1")
                     temp2 = 1;
                 if (mem.opcode == "j")
                 {
                     if (mem.pc + 2 == pc)
                     {
-                        cout << "HI>>" << endl;
                         rev_HisDelete(id.pc);
                         reset(id);
                         stall(temp);
@@ -708,29 +604,19 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                     }
                 }
             }
-            // if (m[mem.opcode].type == "br")
-            // {
-            //     stall(temp);
-            //     return;
-            // }
         }
-        // std::cout << "HI1" << endl;
         if (id.opcode.size() != 0 || ex.latency != 0)
         {
-            cout << "HI" << endl;
             if (ex.opcode.size() != 0)
             {
                 if (check_stall(ex))
                 {
-                    cout << "Stall   Hi...." << endl;
                     stall(temp);
                     return;
                 }
             }
             else if (check_stall(id))
             {
-                cout << endl
-                     << "Stall HI" << endl;
                 stall(temp);
                 return;
             }
@@ -738,15 +624,11 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 ex.latency = m[ex.opcode].latency;
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
-                cout << "HI" << endl;
                 exe(ind);
-                std::cout << "EX" << endl;
-                cout << program[ex.pc] << endl;
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
                     if (ex.pc + 1 != pc - 1)
                     {
-                        cout << "--FLushing Pipeline--" << ex.pc + 1 << " " << pc + 1 << endl;
                         if_reg.parts.clear();
                         stall(temp);
                         return;
@@ -759,11 +641,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 return;
             }
         }
-        // std::cout << "HI2" << endl;
-        // std::cout << "Size:" << if_reg.parts.size() << endl;
         if (if_reg.parts.size() != 0)
         {
-            // std::cout << "HI" << endl;
             if (id.opcode.size() != 0)
             {
                 stall(temp);
@@ -776,30 +655,16 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             }
 
             id_rf(memory, top, ind);
-            std::cout << "ID" << endl;
-            cout << program[id.pc] << endl;
-            // if(m[id.opcode].type=="br")
-            // {
-            //     stall(temp);
-            //     return;
-            // }
         }
         if (pc < program.size())
         {
             ins_fetch();
             if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
             {
-                // pc++;
-                cout << "HI Madhav" << endl;
                 segment = ".data";
                 execute(memory, top, ind);
-                // if_reg.parts.clear();
                 ins_fetch();
             }
-            std::cout << "Size:" << if_reg.parts.size() << endl;
-            // std::cout << "Program Counter:" << pc << endl;
-            std::cout << "IF" << endl;
-            cout << program[if_reg.pc] << endl;
         }
         stall(temp);
     }
@@ -811,43 +676,30 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
         {
             history.erase(history.begin());
         }
-        std::cout << "-----New Clock Cycle-----" << endl;
-        cout << "Program Counter:" << pc + 1 << endl;
-        cout << "Id:" << id.opcode << " Ex:" << ex.opcode << " Ex-Latency:" << ex.latency << " Mem:" << mem.opcode << endl;
         if (mem.opcode.size() != 0)
         {
-            // temp.push_back(mem.pc);
-            std::cout << "WB" << endl;
-            cout << program[mem.pc] << endl;
             write_back(ind);
-            cout << "madhav Topper" << endl;
+            n_ins++;
         }
-        // std::cout << "HI" << endl;
         if (ex.opcode.size() != 0)
         {
 
             if (mem.opcode.size() != 0)
             {
                 stall(temp);
-                cout << "Hi..Hello" << endl;
                 return;
             }
             if (ex.latency == 0)
             {
-                cout << "Hi Madhav..." << endl;
                 meme(memory, top, ind);
-                cout << "Hi" << endl;
                 if (mem.opcode == "lw")
                     temp.push_back(mem.pc);
-                std::cout << "MEM" << endl;
-                cout << program[mem.pc] << endl;
                 if (m[mem.opcode].type == "mem1")
                     temp2 = 1;
                 if (mem.opcode == "j")
                 {
                     if (mem.pc + 2 == pc)
                     {
-                        cout << "HI>>" << endl;
                         rev_HisDelete(id.pc);
                         reset(id);
                         stall(temp);
@@ -856,28 +708,19 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                     }
                 }
             }
-            // if (m[mem.opcode].type == "br")
-            // {
-            //     stall(temp);
-            //     return;
-            // }
         }
-        // std::cout << "HI1" << endl;
         if (id.opcode.size() != 0 || ex.latency != 0)
         {
             if (ex.opcode.size() != 0)
             {
                 if (check_stall(ex))
                 {
-                    cout << "Stall   Hi...." << endl;
                     stall(temp);
                     return;
                 }
             }
             else if (check_stall(id))
             {
-                cout << endl
-                     << "Stall HI" << endl;
                 stall(temp);
                 return;
             }
@@ -890,13 +733,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 {
                     temp.push_back(ex.pc);
                 }
-                std::cout << "EX" << endl;
-                cout << program[ex.pc] << endl;
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
                     if (ex.pc + 1 != pc - 1)
                     {
-                        cout << "--FLushing Pipeline--" << ex.pc + 1 << " " << pc + 1 << endl;
                         if_reg.parts.clear();
                         stall(temp);
                         return;
@@ -909,11 +749,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 return;
             }
         }
-        // std::cout << "HI2" << endl;
-        // std::cout << "Size:" << if_reg.parts.size() << endl;
         if (if_reg.parts.size() != 0)
         {
-            // std::cout << "HI" << endl;
             if (id.opcode.size() != 0)
             {
                 stall(temp);
@@ -926,30 +763,16 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             }
 
             id_rf(memory, top, ind);
-            std::cout << "ID" << endl;
-            cout << program[id.pc] << endl;
-            // if(m[id.opcode].type=="br")
-            // {
-            //     stall(temp);
-            //     return;
-            // }
         }
         if (pc < program.size())
         {
             ins_fetch();
             if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
             {
-                // pc++;
-                cout << "HI Madhav" << endl;
                 segment = ".data";
                 execute(memory, top, ind);
-                // if_reg.parts.clear();
                 ins_fetch();
             }
-            std::cout << "Size:" << if_reg.parts.size() << endl;
-            // std::cout << "Program Counter:" << pc << endl;
-            std::cout << "IF" << endl;
-            cout << program[if_reg.pc] << endl;
         }
         stall(temp);
     }
@@ -960,7 +783,6 @@ void Core::execute(int memory[], ll &top, int i)
     string s;
     if (pc >= program.size())
         return;
-    // std::cout << "Program counter:" << pc + 1 << endl;
     for (int i = 0; i < program[pc].size(); i++)
     {
         if (program[pc][i] == ',')
@@ -969,23 +791,16 @@ void Core::execute(int memory[], ll &top, int i)
     stringstream ss(program[pc]);
     while (getline(ss, s, ' '))
     {
-        // s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
         if (s[s.size() - 1] == ':' && parts.size() == 0 && segment == ".text")
         {
             if (labels[s.substr(0, s.size() - 1)] == 0)
             {
                 labels[s.substr(0, s.size() - 1)] = pc + 1;
-                // std::cout << "The Label \"" << s << "\" is in Line no. " << labels[s.substr(0, s.size() - 1)] << endl;
             }
         }
         else if (s != "\0")
             parts.push_back(s);
     }
-    // for (auto i : parts)
-    // {
-    //     std::cout << i << endl;
-    // }
-    // std::cout << endl;
     string opcode = "";
     if (!parts.empty())
         opcode = parts[0];
@@ -993,13 +808,9 @@ void Core::execute(int memory[], ll &top, int i)
     {
         segment = ".text";
         pc++;
-        std::cout << "--------------------------------Memory---------------------------------" << endl;
         for (int i = 0; i < 40; i++)
         {
-            std::cout << memory[i] << " ";
         }
-        std::cout << endl;
-        cout << ".Text begins form here" << endl;
         if_reg.parts.clear();
         return;
     }
@@ -1012,11 +823,7 @@ void Core::execute(int memory[], ll &top, int i)
     }
     else if (segment == ".data")
     {
-        // for (int i = 0; i < parts.size(); i++)
-        // {
-        //     cout << parts[i] << endl;
-        // }
-        // cout << "Hello madhav" << parts[0][parts[0].size() - 1] << endl;
+        // cout << parts[i] << endl;
         if (!parts.empty() && parts[0][parts[0].size() - 1] == ':')
         {
             int n = parts.size();
@@ -1030,15 +837,10 @@ void Core::execute(int memory[], ll &top, int i)
                 for (int i = top; i < m + n - 2; i++)
                 {
                     memory[i] = stoi(parts[i - m + 2]);
-                    cout << memory[i] << " ";
-                    // cout << "top:" << top << endl;
                     top++;
                 }
-                // cout << endl;
                 a.value = stoi(parts[2]);
                 variables[parts[0]] = a;
-                // cout << *((int *)a.address) << " " << a.address << " " << a.size << " " << a.data_type << endl;
-                // cout << "Hi" << endl;
                 a.size = 4;
             }
             else if (parts[1] == ".string")
@@ -1048,35 +850,27 @@ void Core::execute(int memory[], ll &top, int i)
                     if (parts[i][0] == '#')
                         break;
                     parts[2] += " " + parts[i];
-                    // cout << parts[2] << endl;
                 }
                 parts[2] = parts[2].substr(1, parts[2].size() - 2);
-                // cout << "String:" << parts[2] << endl;
                 parts[2] += "\0";
-                // parts[2] = parts[2].substr(1, parts[2].size() - 2);
                 int count = top * 4 + (ll)memory;
                 char t = '\n';
-                // cout << t;
                 for (int i = top * 4 + (ll)memory; i < top * 4 + (ll)memory + parts[2].size(); i++)
                 {
-                    // cout << parts[2][i - top * 4 - (ll)memory] << " ";
                     if (parts[2][i - top * 4 - (ll)memory] == '\\')
                     {
                         t = '\\';
-                        // cout << "Hello:"<< (int)('\\') << endl;
                         continue;
                     }
                     if (t == '\\')
                     {
                         if (parts[2][i - top * 4 - (ll)memory] == 'n')
                             parts[2][i - top * 4 - (ll)memory] = '\n';
-                        // cout << "Appeared:" << parts[2][i - top * 4 - (ll)memory]<<(int)parts[2][i - top * 4 - (ll)memory] << endl;
                         t = ' ';
                     }
                     *((char *)count) = (int)(parts[2][i - top * 4 - (ll)memory]);
                     count++;
                 }
-                // cout << "------------" << endl;
                 a.address = (int)(memory + top);
                 a.data_type = parts[1];
                 variables[parts[0]] = a;
@@ -1087,253 +881,5 @@ void Core::execute(int memory[], ll &top, int i)
         execute(memory, top, i);
         return;
     }
-    else if (opcode == "mv")
-    {
-        int &rd1 = reg[regf(parts[1])];
-        int rs1 = reg[regf(parts[2])];
-        rd1 = rs1;
-        // cout << reg[stoi(parts[1].substr(1, parts[1].size()))] << endl;
-    }
-    else if (opcode == "la")
-    {
-        // cout << "Program Counter:" << pc + 1 << endl;
-        // int &rd1 = reg[stoi(parts[1].substr(1, parts[1].size()))];
-        int &rd1 = reg[regf(parts[1])];
-        string rs1 = parts[2];
-        rd1 = variables[rs1].address;
-        // cout << variables[rs1].data_type;
-        // cout << "load address: " << rd1 << endl;
-    }
-    else if (opcode == "add" || opcode == "addi")
-    {
-        int rs1 = reg[regf(parts[2])];
-        int rs2;
-        if (opcode == "add")
-            rs2 = reg[regf(parts[3])];
-        else
-            rs2 = stoi(parts[3]);
-        int &rd1 = reg[regf(parts[1])];
-        rd1 = rs1 + rs2;
-        // cout << "Addition in progress" << endl;
-    }
-    else if (opcode == "sub")
-    {
-        int rs1 = reg[regf(parts[2])];
-        int rs2 = reg[regf(parts[3])];
-        int &rd1 = reg[regf(parts[1])];
-        rd1 = rs1 - rs2;
-    }
-    else if (opcode == "mul")
-    {
-        int rs1 = reg[regf(parts[2])];
-        int rs2 = reg[regf(parts[3])];
-        int &rd1 = reg[regf(parts[1])];
-        rd1 = rs1 * rs2;
-    }
-    else if (opcode == "div")
-    {
-        int rs1 = reg[regf(parts[2])];
-        int rs2 = reg[regf(parts[3])];
-        int &rd1 = reg[regf(parts[1])];
-        rd1 = rs1 / rs2;
-    }
-    else if (opcode == "li")
-    {
-        // cout << parts[2] << endl;
-        int rs1 = stoi(parts[2]);
-        int &rd1 = reg[regf(parts[1])];
-        rd1 = rs1;
-    }
-    else if (opcode == "lw")
-    {
-        // cout << "Program counter:" << pc + 1 << endl;
-        vector<string> source;
-        string s;
-        stringstream ss(parts[2]);
-        int &rd1 = reg[regf(parts[1])];
-        if (variables[parts[2]].data_type == ".word")
-        {
-            rd1 = variables[parts[2]].value;
-            // cout << "Hi" << endl;
-        }
-        else
-        {
-            while (getline(ss, s, '('))
-            {
-                source.push_back(s);
-            }
-            int offset = stoi(source[0]);
-            int location = reg[regf(source[1].substr(0, source[1].size() - 1))];
-            // cout << offset << " " << location << endl;
-            // cout << "Source:"<<regf(source[1].substr(0, source[1].size() - 1)) << endl;
-            // cout << "Location:" << location << endl;
-            int rs1 = *((int *)(location + offset));
-            // cout << "HI" << endl;
-            rd1 = rs1;
-            // cout << "HI" << endl;
-        }
-        // cout << "Load Word:" << rd1 << endl;
-    }
-    else if (opcode == "sw")
-    {
-        vector<string> source;
-        string s;
-        stringstream ss(parts[2]);
-        while (getline(ss, s, '('))
-        {
-            source.push_back(s);
-        }
-        int offset = stoi(source[0]);
-        int location = regf(source[1].substr(0, source[1].size() - 1));
-        // cout << offset << " " << location << endl;
-        location = (reg[location] - (int)memory) / 4;
-        // cout << "location:" << location + offset / 4 << endl;
-        int &rd1 = memory[location + offset / 4];
-        int rs1 = reg[regf(parts[1])];
-        // cout << rs1 << endl;
-        rd1 = rs1;
-    }
-    else if (opcode == "bne")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 != rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "beq")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 == rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "bge")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 >= rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "ble")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 <= rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "blt")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 < rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "bgt")
-    {
-        int rs1 = reg[regf(parts[1])];
-        int rs2 = reg[regf(parts[2])];
-        // cout << "rs1:" << rs1 << " rs2:" << rs2 << endl;
-        if (rs1 > rs2)
-        {
-            string label = parts[3];
-            go_to(parts, label);
-        }
-    }
-    else if (opcode == "jal")
-    {
-        rec.push(pc + 1);
-        reg[regf(parts[1])] = pc + 1;
-        string label = parts[2];
-        if (labels[label] != 0)
-        {
-            pc = labels[label] - 2;
-        }
-        else
-        {
-            int j;
-            while (pc < program.size())
-            {
-                string s = "";
-                for (j = 0; j < program[pc].size(); j++)
-                {
-                    if (program[pc][j] == ':')
-                    {
-                        break;
-                    }
-                }
-                for (int k = 0; k < j; k++)
-                {
-                    if (program[pc][k] != ' ')
-                    {
-                        s += program[pc][k];
-                    }
-                }
-                if (s == label)
-                {
-                    pc--;
-                    break;
-                }
-                pc++;
-            }
-        }
-    }
-    else if (opcode == "ret")
-    {
-        if (!rec.empty())
-        {
-            pc = rec.top() - 1;
-            rec.pop();
-        }
-    }
-    else if (opcode == "j")
-    {
-        // cout << "Program Counter:" << pc + 1 << endl;
-        string label = parts[1];
-        go_to(parts, label);
-    }
-    else if (opcode == "ecall")
-    {
-        // cout <<"Program Counter:"<< pc << endl;
-        if (reg[17] == 1)
-        {
-            cout << reg[10];
-        }
-        if (reg[17] == 4)
-        {
-            // cout << "Program counter:" << pc << endl;
-            int p = reg[10];
-            while ((char)*((char *)p) != '\0')
-            {
-                cout << (char)*((char *)p);
-                // cout << "Program counter:" << pc+1 << endl;
-                p++;
-            }
-        }
-    }
     pc += 1;
-    if (pc >= program.size() && !rec.empty())
-    {
-        pc = rec.top();
-        rec.pop();
-    }
 }
