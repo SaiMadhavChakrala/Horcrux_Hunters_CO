@@ -18,6 +18,9 @@ std::string trim(const std::string &s)
 }
 int main()
 {
+    int d;
+    cout << "Enter 0 for Data Forwarding to be enabled else 1:";
+    cin >> d;
     freopen("out.txt", "w", stdout);
     Processor sim;
     std::string filepath = "./Testfile[1].txt";
@@ -40,7 +43,7 @@ int main()
             line = trim(line);
             sim.cores[0].program[sim.cores[0].program.size() - 1] += " " + line;
         }
-        cout << sim.cores[0].program.size() << ":" << sim.cores[0].program[sim.cores[0].program.size() - 1] << endl;
+        // std::cout << sim.cores[0].program.size() << ":" << sim.cores[0].program[sim.cores[0].program.size() - 1] << endl;
     }
     file.close();
     std::string filepath2 = "./Testfile[2].txt";
@@ -53,9 +56,21 @@ int main()
     std::string line2;
     while (std::getline(file2, line2))
     {
+        line2 = trim(line2);
+        if (line2 == "\0" || line2[0] == '#' || line2.size() == 0)
+            continue;
         sim.cores[1].program.push_back(line2);
+        if (line2[line2.size() - 1] == ':')
+        {
+            getline(file, line2);
+            line2 = trim(line2);
+            sim.cores[1].program[sim.cores[1].program.size() - 1] += " " + line2;
+        }
+        // std::cout << sim.cores[1].program.size() << ":" << sim.cores[1].program[sim.cores[1].program.size() - 1] << endl;
     }
-    sim.run();
+    sim.cores[0].init();
+    sim.cores[1].init();
+    sim.run(d);
     string s = "";
     file2.close();
     return 0;
