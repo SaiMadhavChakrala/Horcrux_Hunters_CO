@@ -18,8 +18,8 @@ std::string trim(const std::string &s)
 }
 int main()
 {
+    cout << "Enter 0 for Data Forwarding else 1:";
     int d;
-    cout << "Enter 0 for Data Forwarding to be enabled else 1:";
     cin >> d;
     freopen("out.txt", "w", stdout);
     Processor sim;
@@ -37,13 +37,45 @@ int main()
         if (line == "\0" || line[0] == '#' || line.size() == 0)
             continue;
         sim.cores[0].program.push_back(line);
+        string p = "";
+        stringstream ss(line);
+        vector<string> array;
+        while (getline(ss, p, ' '))
+        {
+            if (p.size() != 0 && p[0] == '#')
+                break;
+            if (array.size() == 2)
+            {
+                break;
+            }
+            else if (p != "\0")
+            {
+                array.push_back(p);
+            }
+        }
+        if (!array.empty() && array[0] == "la")
+        {
+            while (getline(ss, p, ' '))
+            {
+                if (p.size() != 0 && p[0] == '#')
+                    break;
+                else if (p != "\0")
+                {
+                    array.push_back(p);
+                }
+            }
+            p = "addi ";
+            p += array[1] + " " + array[1] + "  0";
+            sim.cores[0].program.push_back(p);
+            // cout << p << endl;
+        }
         if (line[line.size() - 1] == ':')
         {
             getline(file, line);
             line = trim(line);
             sim.cores[0].program[sim.cores[0].program.size() - 1] += " " + line;
         }
-        // std::cout << sim.cores[0].program.size() << ":" << sim.cores[0].program[sim.cores[0].program.size() - 1] << endl;
+        // cout << sim.cores[0].program.size() << ":" << sim.cores[0].program[sim.cores[0].program.size() - 1] << endl;
     }
     file.close();
     std::string filepath2 = "./Testfile[2].txt";
@@ -60,13 +92,45 @@ int main()
         if (line2 == "\0" || line2[0] == '#' || line2.size() == 0)
             continue;
         sim.cores[1].program.push_back(line2);
+        string p = "";
+        stringstream ss(line2);
+        vector<string> array;
+        while (getline(ss, p, ' '))
+        {
+            if (p.size() != 0 && p[0] == '#')
+                break;
+            if (array.size() == 2)
+            {
+                break;
+            }
+            else if (p != "\0")
+            {
+                array.push_back(p);
+            }
+        }
+        if (!array.empty() && array[0] == "la")
+        {
+            while (getline(ss, p, ' '))
+            {
+                if (p.size() != 0 && p[0] == '#')
+                    break;
+                else if (p != "\0")
+                {
+                    array.push_back(p);
+                }
+            }
+            p = "addi ";
+            p += array[1] + " " + array[1] + "  0";
+            sim.cores[1].program.push_back(p);
+            // cout << p << endl;
+        }
         if (line2[line2.size() - 1] == ':')
         {
-            getline(file, line2);
+            getline(file2, line2);
             line2 = trim(line2);
             sim.cores[1].program[sim.cores[1].program.size() - 1] += " " + line2;
         }
-        // std::cout << sim.cores[1].program.size() << ":" << sim.cores[1].program[sim.cores[1].program.size() - 1] << endl;
+        // cout << sim.cores[1].program.size() << ":" << sim.cores[1].program[sim.cores[1].program.size() - 1] << endl;
     }
     sim.cores[0].init();
     sim.cores[1].init();
