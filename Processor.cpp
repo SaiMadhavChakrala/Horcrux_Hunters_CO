@@ -14,11 +14,17 @@ void Processor::run(int d)
         cout << left << setw(7) << "X" + to_string(i) << setw(8) << setw(10) << cores[0].reg[i] << setw(8) << setw(10) << cores[1].reg[i] << endl;
     }
     ll i = 1;
-    while (cores[1].pc < cores[1].program.size() || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0 || cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
+    cout << endl;
+    if (d == 0)
+        cout << "------Data Forwarding Enabled-------" << endl;
+    else
+        cout << "------Data Forwarding Disabled-------" << endl;
+    cout << endl;
+    while (cores[1].pc < cores[1].program.size() || cores[1].if_reg.parts.size() != 0 || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0 || cores[0].if_reg.parts.size() != 0 || cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
     {
-        if (cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
+        if (cores[0].if_reg.parts.size() != 0 || cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
             cores[0].stagewise_execute(memory, top, d);
-        if (cores[1].pc < cores[1].program.size() || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0)
+        if (cores[1].if_reg.parts.size() != 0 || cores[1].pc < cores[1].program.size() || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0)
             cores[1].stagewise_execute(memory, top, d);
     }
     cout << "--------------Core:1---------------" << endl;

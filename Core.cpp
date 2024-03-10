@@ -131,6 +131,8 @@ void Core::rev_HisDelete(int temp)
 }
 bool Core::check_stall(Registers rd)
 {
+    // cout << "PC to be removed:" << rd.pc << endl;
+    // cout << "History Size:" << history.size() << endl;
     for (int i = 0; i < history.size(); i++)
     {
         if (rd.pc == history[i].pc)
@@ -140,6 +142,7 @@ bool Core::check_stall(Registers rd)
         }
         else if ((rd.rs1 != -1 && rd.rs1 == history[i].rd1) || (rd.rs2 != -1 && rd.rs2 == history[i].rd1))
         {
+            // cout << history[i].pc << ":" << program[history[i].pc] << endl;
             return true;
         }
     }
@@ -406,7 +409,8 @@ void Core::exe(int ind)
             }
         }
     }
-    ex.latency--;
+    if (ex.latency > 0)
+        ex.latency--;
 }
 void Core::id_rf(int memory[], ll &top, int ind)
 {
@@ -423,6 +427,7 @@ void Core::id_rf(int memory[], ll &top, int ind)
         return;
     }
     id.latency = m[id.opcode].latency;
+    // cout << "Latency of " << id.opcode << ": " << id.latency << endl;
     if (m[id.opcode].type == "jmp")
     {
         if (id.opcode == "j")
@@ -551,12 +556,9 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
+                    // cout << "History Deleted:" << endl;
+                    // cout << program[history[j].pc] << endl;
                     history.erase(history.begin() + j);
-                    {
-                        for (auto p : history)
-                        {
-                        }
-                    }
                     break;
                 }
             }
@@ -566,6 +568,7 @@ void Core::stall(vector<int> temp)
 void Core::stagewise_execute(int memory[], ll &top, int ind)
 {
     clock++;
+    // cout << "----------New Cycle----------" << endl;
     if (ind)
     {
         vector<int> temp;
@@ -678,12 +681,13 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
         }
         if (mem.opcode.size() != 0)
         {
+            // cout << "WB" << endl;
+            // cout << program[mem.pc] << endl;
             write_back(ind);
             n_ins++;
         }
         if (ex.opcode.size() != 0)
         {
-
             if (mem.opcode.size() != 0)
             {
                 stall(temp);
@@ -691,6 +695,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             }
             if (ex.latency == 0)
             {
+                // cout << "MEM" << endl;
+                // cout << program[ex.pc] << endl;
                 meme(memory, top, ind);
                 if (mem.opcode == "lw")
                     temp.push_back(mem.pc);
@@ -713,6 +719,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
         {
             if (ex.opcode.size() != 0)
             {
+                // cout << "Stall" << endl;
                 if (check_stall(ex))
                 {
                     stall(temp);
@@ -728,10 +735,16 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 ex.latency = m[ex.opcode].latency;
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
+                // cout << "EX" << endl;
+                // cout << program[id.pc] << endl;
                 exe(ind);
-                if (m[ex.opcode].type == "ari" || ex.opcode == "la")
+                // cout << "Latency:" << ex.latency << endl;
+                if (ex.latency == 0)
                 {
-                    temp.push_back(ex.pc);
+                    if (m[ex.opcode].type == "ari" || ex.opcode == "la")
+                    {
+                        temp.push_back(ex.pc);
+                    }
                 }
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
@@ -761,7 +774,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 stall(temp);
                 return;
             }
-
+            // cout << "ID" << endl;
+            // cout << program[if_reg.pc] << endl;
             id_rf(memory, top, ind);
         }
         if (pc < program.size())
@@ -773,6 +787,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 execute(memory, top, ind);
                 ins_fetch();
             }
+            // cout << "IF" << endl;
+            // cout << program[if_reg.pc] << endl;
         }
         stall(temp);
     }
