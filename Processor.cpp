@@ -2,11 +2,8 @@
 using namespace std;
 #define ll long long int
 #include "Processor.hpp"
-// #include "Core.hpp"
-// #include "Core.cpp"
 void Processor::run(int d)
 {
-    // printf("%p\n", memory);
     cout << "-------Before running-------" << endl;
     cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
     for (int i = 0; i < 32; i++)
