@@ -1,5 +1,7 @@
 #pragma once
 #include <bits/stdc++.h>
+#include "Cache.hpp"
+// #include "Processor.hpp"
 #define ll long long int
 using namespace std;
 class IF
@@ -8,6 +10,7 @@ public:
     vector<string> parts;
     void split(int memory, ll &top, int i);
     int pc = -1;
+    int latency = 0;
 };
 class Registers
 {
@@ -49,15 +52,16 @@ public:
     map<string, Instruction> m;
     vector<Registers> history;
     void init();
-    void stagewise_execute(int memory[], ll &top, int ind);
+    void stagewise_execute(int memory[], ll &top, int ind, Cache &cache);
     void write_back(int ind);
-    void meme(int memory[], int top, int ind);
+    void meme(int memory[], int top, int ind,Cache &cache);
     void exe(int ind);
     void id_rf(int memory[], ll &top, int ind);
     void ins_fetch();
     void reset(Registers &r);
     void copy(Registers &rd, Registers rs);
     bool check_stall(Registers r);
+    bool check_hazard(Registers a, Registers b);
     void stall(vector<int> temp);
     void rev_HisDelete(int temp);
 };

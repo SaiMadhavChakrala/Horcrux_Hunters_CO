@@ -1,5 +1,6 @@
 #pragma once
 #include "Core.hpp"
+// #include "Cache.hpp"
 class Processor
 {
 public:
@@ -9,6 +10,25 @@ public:
     long long top = 0;
     // void upload(Core cores[]);
     void run(int d);
-
+    Cache cache;
     // Add any other member functions or data members if needed
 };
+// class Tag
+// {
+// public:
+//     int core = -1;
+//     int address;
+// };
+// class Cache
+// {
+// public:
+//     vector<list<Tag>> set;
+//     unsigned int cacheSize;
+//     unsigned int blockSize = 8;
+//     unsigned int numBlocks = 8;
+//     unsigned int assoc = 2;
+//     unsigned int nSets = 4;
+//     unsigned int missLatency = 4;
+// };
+
+

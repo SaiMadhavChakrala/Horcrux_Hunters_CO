@@ -148,6 +148,18 @@ bool Core::check_stall(Registers rd)
     }
     return false;
 }
+bool Core::check_hazard(Registers a, Registers b)
+{
+    if (a.rd1 == -1)
+        return false;
+    if (a.rd1 == b.rd1)
+        return true;
+    if (a.rd1 == b.rs1)
+        return true;
+    if (a.rd1 == b.rs2)
+        return true;
+    return false;
+}
 void Core::write_back(int ind)
 {
     if (ind)
@@ -176,7 +188,7 @@ void Core::write_back(int ind)
     }
     reset(mem);
 }
-void Core::meme(int memory[], int top, int ind)
+void Core::meme(int memory[], int top, int ind, Cache &cache)
 {
     if (ind)
     {
@@ -208,49 +220,102 @@ void Core::meme(int memory[], int top, int ind)
         }
         if (mem.opcode == "la")
             mem.ans = variables[mem.label].address;
+        reset(ex);
     }
     else
     {
-        copy(mem, ex);
-        if (mem.opcode == "j")
+        if (mem.opcode.size() == 0)
         {
-            vector<string> a;
-            go_to(a, ex.label);
-            pc++;
-            if (mem.pc + 1 != pc && mem.pc + 2 != pc)
+            copy(mem, ex);
+            if (mem.opcode == "lw")
             {
-                rev_HisDelete(id.pc);
-                reset(id);
-                if_reg.parts.clear();
+                int addr;
+                if (mem.rs1 != -1)
+                    addr = (int)(reg[mem.rs1] + mem.offset);
+                else
+                    addr = variables[mem.label].address;
+                int p = (addr >> (int)log2(cache.blockSize));
+                int x = log2(cache.nSets);
+                x = (1 << x) - 1;
+                x = x & p;
+                Tag tag;
+                tag.address = addr;
+                if (cache.set[x].size() == 2)
+                    cache.set[x].pop_front();
+                list<Tag>::iterator ptr = cache.set[x].end();
+                for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
+                {
+                    if ((*i).address == addr && (*i).core == -1)
+                    {
+                        ptr = i;
+                    }
+                }
+                if (ptr != cache.set[x].end())
+                {
+                    mem.latency = 1;
+                    cache.set[x].erase(ptr);
+                }
+                else if (cache.set[x].size() == cache.assoc)
+                {
+                    mem.latency = cache.missLatency;
+                    cache.set[x].pop_front();
+                }
+                else
+                {
+                    mem.latency = cache.missLatency;
+                }
+                cache.set[x].push_back(tag);
+                cout << "Pushed into cache" << endl;
             }
-            if (mem.pc + 1 == pc)
-            {
-                rev_HisDelete(id.pc);
-                reset(id);
-                if_reg.parts.clear();
-            }
-        }
-        if (mem.opcode == "sw")
-        {
-            int location = mem.rs2;
-            location = (reg[location] - (int)memory) / 4;
-            int &rd1 = memory[location + mem.offset / 4];
-            rd1 = reg[mem.rs1];
-        }
-        if (mem.opcode == "la")
-        {
-            mem.ans = variables[mem.label].address;
-        }
-        if (mem.opcode == "lw")
-        {
-            int &rd = reg[ex.rd1];
-            if (ex.rs1 != -1)
-                rd = *((int *)(reg[ex.rs1] + ex.offset));
             else
-                rd = variables[ex.label].value;
+                mem.latency = 1;
+            if (mem.opcode == "j")
+            {
+                vector<string> a;
+                go_to(a, ex.label);
+                pc++;
+                cout << "PC mem" << pc << endl;
+                if (mem.pc + 1 != pc && mem.pc + 2 != pc)
+                {
+                    rev_HisDelete(id.pc);
+                    reset(id);
+                    if_reg.parts.clear();
+                }
+                if (mem.pc + 1 == pc)
+                {
+                    rev_HisDelete(id.pc);
+                    reset(id);
+                    if_reg.parts.clear();
+                }
+            }
+            reset(ex);
         }
+        if (mem.latency == 1)
+        {
+            if (mem.opcode == "sw")
+            {
+                int location = mem.rs2;
+                location = (reg[location] - (int)memory) / 4;
+                int &rd1 = memory[location + mem.offset / 4];
+                rd1 = reg[mem.rs1];
+            }
+            if (mem.opcode == "la")
+            {
+                mem.ans = variables[mem.label].address;
+            }
+            if (mem.opcode == "lw")
+            {
+                int &rd = reg[mem.rd1];
+                if (mem.rs1 != -1)
+                    rd = *((int *)(reg[mem.rs1] + mem.offset));
+                else
+                    rd = variables[mem.label].value;
+            }
+        }
+        if (mem.latency > 0)
+            mem.latency--;
+        // if (mem.latency == 0)
     }
-    reset(ex);
 }
 void Core::exe(int ind)
 {
@@ -556,8 +621,8 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
-                    // cout << "History Deleted:" << endl;
-                    // cout << program[history[j].pc] << endl;
+                    cout << "History Deleted:" << endl;
+                    cout << program[history[j].pc] << endl;
                     history.erase(history.begin() + j);
                     break;
                 }
@@ -565,10 +630,11 @@ void Core::stall(vector<int> temp)
         }
     }
 }
-void Core::stagewise_execute(int memory[], ll &top, int ind)
+void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
 {
     clock++;
-    // cout << "----------New Cycle----------" << endl;
+    // cout << pc << endl;
+    cout << "----------New Cycle----------" << endl;
     if (ind)
     {
         vector<int> temp;
@@ -582,6 +648,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             temp.push_back(mem.pc);
             n_ins++;
             write_back(ind);
+            cout << "WB" << endl;
         }
         if (ex.opcode.size() != 0)
         {
@@ -592,7 +659,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             }
             if (ex.latency == 0)
             {
-                meme(memory, top, ind);
+                meme(memory, top, ind, cache);
+                cout << "MEM Latency:" << mem.latency << endl;
                 if (m[mem.opcode].type == "mem1")
                     temp2 = 1;
                 if (mem.opcode == "j")
@@ -608,7 +676,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 }
             }
         }
-        if (id.opcode.size() != 0 || ex.latency != 0)
+        if (mem.latency == 0 && (id.opcode.size() != 0 || ex.latency != 0))
         {
             if (ex.opcode.size() != 0)
             {
@@ -618,16 +686,20 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                     return;
                 }
             }
-            else if (check_stall(id))
+            else
             {
-                stall(temp);
-                return;
+                if (check_stall(id))
+                {
+                    stall(temp);
+                    return;
+                }
             }
             if (ex.opcode.size() == 0)
                 ex.latency = m[ex.opcode].latency;
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
                 exe(ind);
+                cout << "EX" << endl;
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
                     if (ex.pc + 1 != pc - 1)
@@ -658,6 +730,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
             }
 
             id_rf(memory, top, ind);
+            cout << "ID" << endl;
         }
         if (pc < program.size())
         {
@@ -667,6 +740,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 segment = ".data";
                 execute(memory, top, ind);
                 ins_fetch();
+                cout << "IF" << endl;
             }
         }
         stall(temp);
@@ -681,23 +755,26 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
         }
         if (mem.opcode.size() != 0)
         {
-            // cout << "WB" << endl;
-            // cout << program[mem.pc] << endl;
-            write_back(ind);
-            n_ins++;
-        }
-        if (ex.opcode.size() != 0)
-        {
-            if (mem.opcode.size() != 0)
+            if (mem.latency == 0)
             {
-                stall(temp);
-                return;
+                cout << "WB" << endl;
+                // cout << program[mem.pc] << endl;
+                write_back(ind);
+                n_ins++;
             }
-            if (ex.latency == 0)
+        }
+        if (ex.opcode.size() != 0 || mem.latency != 0)
+        {
+            // if (mem.opcode.size() != 0)
+            // {
+            //     stall(temp);
+            //     return;
+            // }
+            if (ex.latency == 0 || mem.latency != 0)
             {
-                // cout << "MEM" << endl;
                 // cout << program[ex.pc] << endl;
-                meme(memory, top, ind);
+                meme(memory, top, ind, cache);
+                cout << "MEM Latency:" << mem.latency << endl;
                 if (mem.opcode == "lw")
                     temp.push_back(mem.pc);
                 if (m[mem.opcode].type == "mem1")
@@ -725,17 +802,32 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                     stall(temp);
                     return;
                 }
+                if (check_hazard(ex, mem))
+                {
+                    cout << "***WAR/WAW***" << endl;
+                    stall(temp);
+                    return;
+                }
             }
-            else if (check_stall(id))
+            else
             {
-                stall(temp);
-                return;
+                if (check_stall(id))
+                {
+                    stall(temp);
+                    return;
+                }
+                if (check_hazard(id, mem))
+                {
+                    cout << "***WAR/WAW***" << endl;
+                    stall(temp);
+                    return;
+                }
             }
             if (ex.opcode.size() == 0)
                 ex.latency = m[ex.opcode].latency;
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
-                // cout << "EX" << endl;
+                cout << "EX" << endl;
                 // cout << program[id.pc] << endl;
                 exe(ind);
                 // cout << "Latency:" << ex.latency << endl;
@@ -774,7 +866,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 stall(temp);
                 return;
             }
-            // cout << "ID" << endl;
+            cout << "ID" << endl;
             // cout << program[if_reg.pc] << endl;
             id_rf(memory, top, ind);
         }
@@ -787,8 +879,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind)
                 execute(memory, top, ind);
                 ins_fetch();
             }
-            // cout << "IF" << endl;
-            // cout << program[if_reg.pc] << endl;
+            cout << "IF" << endl;
+            cout << program[if_reg.pc] << endl;
         }
         stall(temp);
     }
