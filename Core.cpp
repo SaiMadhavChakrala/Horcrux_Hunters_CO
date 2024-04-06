@@ -240,8 +240,6 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                 x = x & p;
                 Tag tag;
                 tag.address = addr;
-                if (cache.set[x].size() == 2)
-                    cache.set[x].pop_front();
                 list<Tag>::iterator ptr = cache.set[x].end();
                 for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
                 {
@@ -630,7 +628,7 @@ void Core::stall(vector<int> temp)
         }
     }
 }
-void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
+void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int cn)
 {
     clock++;
     // cout << pc << endl;
@@ -716,7 +714,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
                 return;
             }
         }
-        if (if_reg.parts.size() != 0)
+        if (if_reg.parts.size() != 0 && if_reg.latency == 0)
         {
             if (id.opcode.size() != 0)
             {
@@ -734,14 +732,52 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
         }
         if (pc < program.size())
         {
-            ins_fetch();
-            if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
+            if (if_reg.parts.size() != 0)
             {
-                segment = ".data";
-                execute(memory, top, ind);
                 ins_fetch();
-                cout << "IF" << endl;
             }
+            int x = log2(cache.nSets);
+            x = (1 << x) - 1;
+            x = x & pc;
+            Tag tag;
+            tag.address = pc;
+            tag.core = cn;
+            list<Tag>::iterator ptr = cache.set[x].end();
+            for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
+            {
+                if ((*i).address == pc && (*i).core == cn)
+                {
+                    ptr = i;
+                }
+            }
+            if (ptr != cache.set[x].end())
+            {
+                if_reg.latency = 1;
+                cache.set[x].erase(ptr);
+            }
+            else if (cache.set[x].size() == cache.assoc)
+            {
+                if_reg.latency = cache.missLatency;
+                cache.set[x].pop_front();
+            }
+            else
+            {
+                if_reg.latency = cache.missLatency;
+            }
+            cache.set[x].push_back(tag);
+            cout << "Pushed pc into cache" << endl;
+            if (if_reg.latency == 1)
+            {
+                if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
+                {
+                    segment = ".data";
+                    execute(memory, top, ind);
+                    ins_fetch();
+                    cout << "IF" << endl;
+                }
+            }
+            if (if_reg.latency)
+                if_reg.latency--;
         }
         stall(temp);
     }
@@ -854,7 +890,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
                 return;
             }
         }
-        if (if_reg.parts.size() != 0)
+        if (if_reg.parts.size() != 0 && if_reg.latency == 0)
         {
             if (id.opcode.size() != 0)
             {
@@ -872,15 +908,60 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache)
         }
         if (pc < program.size())
         {
-            ins_fetch();
-            if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
+            if (if_reg.parts.size() == 0)
             {
-                segment = ".data";
-                execute(memory, top, ind);
                 ins_fetch();
+                if (pc == program.size())
+                {
+                    pc = pc - 1;
+                }
+                int x = log2(cache.nSets);
+                x = (1 << x) - 1;
+                x = x & (pc / (cache.blockSize / 4));
+                list<Tag>::iterator ptr = cache.set[x].end();
+                for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
+                {
+                    if ((*i).address == pc && (*i).core == cn)
+                    {
+                        ptr = i;
+                    }
+                }
+                if (ptr != cache.set[x].end())
+                {
+                    if_reg.latency = 1;
+                    cache.set[x].erase(ptr);
+                }
+                else if (cache.set[x].size() == cache.assoc)
+                {
+                    if_reg.latency = cache.missLatency;
+                    cache.set[x].pop_front();
+                }
+                else
+                {
+                    if_reg.latency = cache.missLatency;
+                }
+                Tag tag;
+                tag.address = pc;
+                tag.core = cn;
+                cache.set[x].push_back(tag);
+                cout << "Pushed pc into cache" << endl;
             }
-            cout << "IF" << endl;
-            cout << program[if_reg.pc] << endl;
+            if (if_reg.latency == 1)
+            {
+                if (pc == program.size() - 1)
+                    ins_fetch();
+                if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
+                {
+                    segment = ".data";
+                    execute(memory, top, ind);
+                    ins_fetch();
+                    cout << "IF" << endl;
+                }
+            }
+            cout << "IF Latency:" << if_reg.latency << endl;
+            cout << "IF :" << program[if_reg.pc] << endl;
+            if (if_reg.latency)
+                if_reg.latency--;
         }
         stall(temp);
     }

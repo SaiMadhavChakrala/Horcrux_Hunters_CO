@@ -52,7 +52,7 @@ public:
     map<string, Instruction> m;
     vector<Registers> history;
     void init();
-    void stagewise_execute(int memory[], ll &top, int ind, Cache &cache);
+    void stagewise_execute(int memory[], ll &top, int ind, Cache &cache,int cn);
     void write_back(int ind);
     void meme(int memory[], int top, int ind,Cache &cache);
     void exe(int ind);

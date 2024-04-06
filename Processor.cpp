@@ -27,9 +27,9 @@ void Processor::run(int d)
     while (cores[1].pc < cores[1].program.size() || cores[1].if_reg.parts.size() != 0 || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0 || cores[0].if_reg.parts.size() != 0 || cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
     {
         if (cores[0].if_reg.parts.size() != 0 || cores[0].pc < cores[0].program.size() || cores[0].id.opcode.size() != 0 || cores[0].ex.opcode.size() != 0 || cores[0].mem.opcode.size() != 0)
-            cores[0].stagewise_execute(memory, top, d, cache);
+            cores[0].stagewise_execute(memory, top, d, cache,0);
         if (cores[1].if_reg.parts.size() != 0 || cores[1].pc < cores[1].program.size() || cores[1].id.opcode.size() != 0 || cores[1].ex.opcode.size() != 0 || cores[1].mem.opcode.size() != 0)
-            cores[1].stagewise_execute(memory, top, d, cache);
+            cores[1].stagewise_execute(memory, top, d, cache,1);
         // cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
         // for (int i = 0; i < 32; i++)
         // {
@@ -41,16 +41,16 @@ void Processor::run(int d)
         //     cout << memory[i] << " ";
         // }
         // cout << endl;
-        cout << "-----Cache-----" << endl;
-        for (int i = 0; i < cache.nSets; i++)
-        {
-            cout << "index:" << i << endl;
-            for (auto j : cache.set[i])
-            {
-                cout << j.address << " " << *((int *)j.address) << endl;
-            }
-        }
-        cout << endl;
+        // cout << "-----Cache-----" << endl;
+        // for (int i = 0; i < cache.nSets; i++)
+        // {
+        //     cout << "index:" << i << endl;
+        //     for (auto j : cache.set[i])
+        //     {
+        //         cout << j.address << " " << *((int *)j.address) << endl;
+        //     }
+        // }
+        // cout << endl;
     }
     cout << "--------------Core:1---------------" << endl;
     cout << "Total No.of Cycles   : " << cores[0].clock << endl;
