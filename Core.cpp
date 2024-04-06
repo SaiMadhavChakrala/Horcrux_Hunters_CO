@@ -910,11 +910,6 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         {
             if (if_reg.parts.size() == 0)
             {
-                ins_fetch();
-                if (pc == program.size())
-                {
-                    pc = pc - 1;
-                }
                 int x = log2(cache.nSets);
                 x = (1 << x) - 1;
                 x = x & (pc / (cache.blockSize / 4));
@@ -940,6 +935,11 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 {
                     if_reg.latency = cache.missLatency;
                 }
+                if (if_reg.latency > 1)
+                {
+                    ins_fetch();
+                    pc = pc - 1;
+                }
                 Tag tag;
                 tag.address = pc;
                 tag.core = cn;
@@ -948,8 +948,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             }
             if (if_reg.latency == 1)
             {
-                if (pc == program.size() - 1)
-                    ins_fetch();
+                // if (pc == program.size() - 1)
+                ins_fetch();
                 if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
                 {
                     segment = ".data";
