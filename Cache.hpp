@@ -17,5 +17,5 @@ public:
     unsigned int numBlocks = 8;
     unsigned int assoc = 2;
     unsigned int nSets = 4;
-    unsigned int missLatency = 4;
+    unsigned int missLatency = 1;
 };

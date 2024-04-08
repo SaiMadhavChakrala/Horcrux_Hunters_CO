@@ -619,13 +619,18 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
-                    cout << "History Deleted:" << endl;
+                    cout << "History Deleted: " ;
                     cout << program[history[j].pc] << endl;
                     history.erase(history.begin() + j);
                     break;
                 }
             }
         }
+    }
+    cout << "History:" << endl;
+    for (int i = 0; i < history.size();i++)
+    {
+        cout << program[history[i].pc] << endl;
     }
 }
 void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int cn)
@@ -697,7 +702,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
                 exe(ind);
-                cout << "EX" << endl;
+                cout << "EX :" << program[ex.pc] << endl;
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
                     if (ex.pc + 1 != pc - 1)
@@ -793,7 +798,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         {
             if (mem.latency == 0)
             {
-                cout << "WB" << endl;
+                cout << "WB :" << program[mem.pc] << endl;
                 // cout << program[mem.pc] << endl;
                 write_back(ind);
                 n_ins++;
@@ -811,19 +816,25 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 // cout << program[ex.pc] << endl;
                 meme(memory, top, ind, cache);
                 cout << "MEM Latency:" << mem.latency << endl;
-                if (mem.opcode == "lw")
-                    temp.push_back(mem.pc);
-                if (m[mem.opcode].type == "mem1")
-                    temp2 = 1;
-                if (mem.opcode == "j")
+                if (mem.latency == 0)
                 {
-                    if (mem.pc + 2 == pc)
+                    if (mem.opcode == "lw"||mem.opcode=="sw")
+                        temp.push_back(mem.pc);
+                    if (m[mem.opcode].type == "mem1")
+                        temp2 = 1;
+                }
+                if (mem.latency == 0)
+                {
+                    if (mem.opcode == "j")
                     {
-                        rev_HisDelete(id.pc);
-                        reset(id);
-                        stall(temp);
-                        pc++;
-                        return;
+                        if (mem.pc + 2 == pc)
+                        {
+                            rev_HisDelete(id.pc);
+                            reset(id);
+                            stall(temp);
+                            pc++;
+                            return;
+                        }
                     }
                 }
             }
@@ -838,7 +849,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     stall(temp);
                     return;
                 }
-                if (check_hazard(ex, mem))
+                if (check_hazard(ex, mem) && mem.latency)
                 {
                     cout << "***WAR/WAW***" << endl;
                     stall(temp);
@@ -852,7 +863,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     stall(temp);
                     return;
                 }
-                if (check_hazard(id, mem))
+                if (check_hazard(id, mem) && mem.latency)
                 {
                     cout << "***WAR/WAW***" << endl;
                     stall(temp);
@@ -869,7 +880,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 // cout << "Latency:" << ex.latency << endl;
                 if (ex.latency == 0)
                 {
-                    if (m[ex.opcode].type == "ari" || ex.opcode == "la")
+                    if (m[ex.opcode].type == "ari" || ex.opcode == "la"||m[ex.opcode].type=="br"||ex.opcode=="j")
                     {
                         temp.push_back(ex.pc);
                     }
