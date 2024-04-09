@@ -37,7 +37,7 @@ class Core
 public:
     Registers id, ex, mem;
     IF if_reg;
-    long long int n_ins = 0, clock = 0;
+    long long int n_ins = 0, clock = 0,cache_miss=0,hits=0,if_hit=0,if_miss=0;
     int reg[32] = {0};
     int pc = 0;
     vector<string> program;

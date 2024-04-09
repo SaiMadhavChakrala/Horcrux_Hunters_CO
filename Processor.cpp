@@ -42,30 +42,34 @@ void Processor::run(int d)
         //     cout << memory[i] << " ";
         // }
         // cout << endl;
-        // cout << "-----Cache-----" << endl;
-        // for (int i = 0; i < cache.nSets; i++)
-        // {
-        //     cout << "index:" << i << endl;
-        //     for (auto j : cache.set[i])
-        //     {
-        //         if (j.core == -1)
-        //             cout << j.address << " " << *((int *)j.address) << endl;
-        //         else
-        //             cout << j.address << " Core:" << j.core << endl;
-        //     }
-        // }
-        // cout << endl;
+        cout << "-----Cache-----" << endl;
+        for (int i = 0; i < cache.nSets; i++)
+        {
+            cout << "index:" << i << endl;
+            for (auto j : cache.set[i])
+            {
+                // if (j.core == -1)
+                //     cout << j.address << " " << *((int *)j.address) << endl;
+                // else
+                //     cout << j.address << " Core:" << j.core << endl;
+                cout << j.address << endl;
+            }
+        }
+        cout << endl;
     }
     cout << "--------------Core:1---------------" << endl;
     cout << "Total No.of Cycles   : " << cores[0].clock << endl;
     cout << "Instructions Executed: " << cores[0].n_ins << endl;
     cout << "IPC                  : " << ((double)cores[0].n_ins / cores[0].clock) << endl;
     cout << "CPI                  : " << ((double)cores[0].clock / cores[0].n_ins) << endl;
+    cout << "Cache Misses         : " << cores[0].cache_miss << endl;
     cout << "--------------Core:2---------------" << endl;
     cout << "Total No.of Cycles   : " << cores[1].clock << endl;
     cout << "Instructions Executed: " << cores[1].n_ins << endl;
     cout << "IPC                  : " << ((double)cores[1].n_ins / cores[1].clock) << endl;
     cout << "CPI                  : " << ((double)cores[1].clock / cores[1].n_ins) << endl;
+    cout << "Cache Misses         : " << cores[1].cache_miss << endl;
+    cout << "Cache Hits           : " << cores[1].hits << endl;
     string s = "";
     std::ofstream outFile("output.txt");
     for (int i = 0; i < 32; i++)

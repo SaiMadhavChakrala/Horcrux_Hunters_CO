@@ -231,35 +231,46 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
             {
                 int addr;
                 if (mem.rs1 != -1)
-                    addr = (int)(reg[mem.rs1] + mem.offset);
+                    addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
                 else
-                    addr = variables[mem.label].address;
-                int p = (addr >> (int)log2(cache.blockSize));
+                    addr = variables[mem.label].address - (int)memory;
+                cout << "Memory access:" << addr << endl;
+                // addr = addr >> 2;
+                int p = (addr >> (int)(log2(cache.blockSize)));
+                addr = (addr >> (int)(log2(cache.blockSize)));
                 int x = log2(cache.nSets);
                 x = (1 << x) - 1;
                 x = x & p;
                 Tag tag;
                 tag.address = addr;
-                list<Tag>::iterator ptr = cache.set[x].end();
+                bool ptr = false;
                 for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
                 {
                     if ((*i).address == addr && (*i).core == -1)
                     {
-                        ptr = i;
+                        ptr = true;
+                        cache.set[x].erase(i);
+                        break;
                     }
                 }
-                if (ptr != cache.set[x].end())
+                if (ptr)
+                    cout << "Found in cache  Tag:" << addr << endl;
+                else
+                    cout << "Not Found" << endl;
+                if (ptr)
                 {
                     mem.latency = 1;
-                    cache.set[x].erase(ptr);
+                    hits++;
                 }
                 else if (cache.set[x].size() == cache.assoc)
                 {
                     mem.latency = cache.missLatency;
+                    cache_miss++;
                     cache.set[x].pop_front();
                 }
                 else
                 {
+                    cache_miss++;
                     mem.latency = cache.missLatency;
                 }
                 cache.set[x].push_back(tag);
@@ -296,10 +307,12 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                 location = (reg[location] - (int)memory) / 4;
                 int &rd1 = memory[location + mem.offset / 4];
                 rd1 = reg[mem.rs1];
+                hits++;
             }
             if (mem.opcode == "la")
             {
                 mem.ans = variables[mem.label].address;
+                // hits++;
             }
             if (mem.opcode == "lw")
             {
@@ -619,7 +632,7 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
-                    cout << "History Deleted: " ;
+                    cout << "History Deleted: ";
                     cout << program[history[j].pc] << endl;
                     history.erase(history.begin() + j);
                     break;
@@ -628,7 +641,7 @@ void Core::stall(vector<int> temp)
         }
     }
     cout << "History:" << endl;
-    for (int i = 0; i < history.size();i++)
+    for (int i = 0; i < history.size(); i++)
     {
         cout << program[history[i].pc] << endl;
     }
@@ -637,7 +650,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
 {
     clock++;
     // cout << pc << endl;
-    cout << "----------New Cycle----------" << endl;
+    cout << "----------New Cycle:" << clock - 1 << "----------" << endl;
     if (ind)
     {
         vector<int> temp;
@@ -818,7 +831,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 cout << "MEM Latency:" << mem.latency << endl;
                 if (mem.latency == 0)
                 {
-                    if (mem.opcode == "lw"||mem.opcode=="sw")
+                    if (mem.opcode == "lw" || mem.opcode == "sw")
                         temp.push_back(mem.pc);
                     if (m[mem.opcode].type == "mem1")
                         temp2 = 1;
@@ -880,7 +893,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 // cout << "Latency:" << ex.latency << endl;
                 if (ex.latency == 0)
                 {
-                    if (m[ex.opcode].type == "ari" || ex.opcode == "la"||m[ex.opcode].type=="br"||ex.opcode=="j")
+                    if (m[ex.opcode].type == "ari" || ex.opcode == "la" || m[ex.opcode].type == "br" || ex.opcode == "j")
                     {
                         temp.push_back(ex.pc);
                     }
@@ -919,32 +932,37 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         }
         if (pc < program.size())
         {
+            if_hit++;
             if (if_reg.parts.size() == 0)
             {
                 int x = log2(cache.nSets);
                 x = (1 << x) - 1;
                 x = x & (pc / (cache.blockSize / 4));
-                list<Tag>::iterator ptr = cache.set[x].end();
+                int addr = (pc / (cache.blockSize / 4));
+                bool ptr = false;
                 for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
                 {
-                    if ((*i).address == pc && (*i).core == cn)
+                    if ((*i).address == addr && (*i).core == cn)
                     {
-                        ptr = i;
+                        cache.set[x].erase(i);
+                        ptr = true;
+                        break;
                     }
                 }
-                if (ptr != cache.set[x].end())
+                if (ptr)
                 {
                     if_reg.latency = 1;
-                    cache.set[x].erase(ptr);
                 }
                 else if (cache.set[x].size() == cache.assoc)
                 {
                     if_reg.latency = cache.missLatency;
                     cache.set[x].pop_front();
+                    if_miss++;
                 }
                 else
                 {
                     if_reg.latency = cache.missLatency;
+                    if_miss++;
                 }
                 if (if_reg.latency > 1)
                 {
@@ -952,10 +970,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     pc = pc - 1;
                 }
                 Tag tag;
-                tag.address = pc;
+                tag.address = addr;
                 tag.core = cn;
                 cache.set[x].push_back(tag);
-                cout << "Pushed pc into cache" << endl;
+                // cout << "Pushed pc into cache" << endl;
             }
             if (if_reg.latency == 1)
             {
@@ -1007,9 +1025,12 @@ void Core::execute(int memory[], ll &top, int i)
     if (opcode == ".text")
     {
         segment = ".text";
-        pc++;
-        for (int i = 0; i < 40; i++)
+        int t = 0;
+        program.erase(program.begin(), program.begin() + pc);
+        pc = 0;
+        for(auto i:program)
         {
+            cout << i << endl;
         }
         if_reg.parts.clear();
         return;
