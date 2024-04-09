@@ -192,35 +192,95 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
 {
     if (ind)
     {
-        copy(mem, ex);
-        if (mem.opcode == "j")
+        if (mem.opcode.size() == 0)
         {
-            vector<string> a;
-            go_to(a, ex.label);
-            pc++;
-            if (mem.pc + 1 != pc && mem.pc + 2 != pc)
+            copy(mem, ex);
+            if (mem.opcode == "lw")
             {
-                rev_HisDelete(id.pc);
-                reset(id);
-                if_reg.parts.clear();
+                int addr;
+                if (mem.rs1 != -1)
+                    addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
+                else
+                    addr = variables[mem.label].address - (int)memory;
+                cout << "Memory access:" << addr << endl;
+                // addr = addr >> 2;
+                int p = (addr >> (int)(log2(cache.blockSize)));
+                addr = (addr >> (int)(log2(cache.blockSize)));
+                int x = log2(cache.nSets);
+                x = (1 << x) - 1;
+                x = x & p;
+                Tag tag;
+                tag.address = addr;
+                bool ptr = false;
+                for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
+                {
+                    if ((*i).address == addr && (*i).core == -1)
+                    {
+                        ptr = true;
+                        cache.set[x].erase(i);
+                        break;
+                    }
+                }
+                if (ptr)
+                    cout << "Found in cache  Tag:" << addr << endl;
+                else
+                    cout << "Not Found" << endl;
+                if (ptr)
+                {
+                    mem.latency = 1;
+                    hits++;
+                }
+                else if (cache.set[x].size() == cache.assoc)
+                {
+                    mem.latency = cache.missLatency;
+                    cache_miss++;
+                    cache.set[x].pop_front();
+                }
+                else
+                {
+                    cache_miss++;
+                    mem.latency = cache.missLatency;
+                }
+                cache.set[x].push_back(tag);
+                cout << "Pushed into cache" << endl;
             }
-            if (mem.pc + 1 == pc)
+            else
+                mem.latency = 1;
+            if (mem.opcode == "j")
             {
-                rev_HisDelete(id.pc);
-                reset(id);
-                if_reg.parts.clear();
+                vector<string> a;
+                go_to(a, ex.label);
+                pc++;
+                if (mem.pc + 1 != pc && mem.pc + 2 != pc)
+                {
+                    rev_HisDelete(id.pc);
+                    reset(id);
+                    if_reg.parts.clear();
+                }
+                if (mem.pc + 1 == pc)
+                {
+                    rev_HisDelete(id.pc);
+                    reset(id);
+                    if_reg.parts.clear();
+                }
             }
+            reset(ex);
         }
-        if (mem.opcode == "sw")
+        if (mem.latency == 1)
         {
-            int location = mem.rs2;
-            location = (reg[location] - (int)memory) / 4;
-            int &rd1 = memory[location + mem.offset / 4];
-            rd1 = reg[mem.rs1];
+            if (mem.opcode == "sw")
+            {
+                hits++;
+                int location = mem.rs2;
+                location = (reg[location] - (int)memory) / 4;
+                int &rd1 = memory[location + mem.offset / 4];
+                rd1 = reg[mem.rs1];
+            }
+            if (mem.opcode == "la")
+                mem.ans = variables[mem.label].address;
         }
-        if (mem.opcode == "la")
-            mem.ans = variables[mem.label].address;
-        reset(ex);
+        if (mem.latency > 0)
+            mem.latency--;
     }
     else
     {
@@ -661,19 +721,17 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         }
         if (mem.opcode.size() != 0)
         {
-            temp.push_back(mem.pc);
-            n_ins++;
-            write_back(ind);
-            cout << "WB" << endl;
-        }
-        if (ex.opcode.size() != 0)
-        {
-            if (mem.opcode.size() != 0)
+            if (mem.latency == 0)
             {
-                stall(temp);
-                return;
+                temp.push_back(mem.pc);
+                n_ins++;
+                write_back(ind);
+                cout << "WB" << endl;
             }
-            if (ex.latency == 0)
+        }
+        if (ex.opcode.size() != 0 || mem.latency != 0)
+        {
+            if (ex.latency == 0 || mem.latency != 0)
             {
                 meme(memory, top, ind, cache);
                 cout << "MEM Latency:" << mem.latency << endl;
@@ -750,42 +808,53 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         }
         if (pc < program.size())
         {
-            if (if_reg.parts.size() != 0)
+            if_hit++;
+            if (if_reg.parts.size() == 0)
             {
-                ins_fetch();
-            }
-            int x = log2(cache.nSets);
-            x = (1 << x) - 1;
-            x = x & pc;
-            Tag tag;
-            tag.address = pc;
-            tag.core = cn;
-            list<Tag>::iterator ptr = cache.set[x].end();
-            for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
-            {
-                if ((*i).address == pc && (*i).core == cn)
+                int x = log2(cache.nSets);
+                x = (1 << x) - 1;
+                x = x & (pc / (cache.blockSize / 4));
+                int addr = (pc / (cache.blockSize / 4));
+                bool ptr = false;
+                for (auto i = cache.set[x].begin(); i != cache.set[x].end(); i++)
                 {
-                    ptr = i;
+                    if ((*i).address == addr && (*i).core == cn)
+                    {
+                        cache.set[x].erase(i);
+                        ptr = true;
+                        break;
+                    }
                 }
+                if (ptr)
+                {
+                    if_reg.latency = 1;
+                }
+                else if (cache.set[x].size() == cache.assoc)
+                {
+                    if_reg.latency = cache.missLatency;
+                    cache.set[x].pop_front();
+                    if_miss++;
+                }
+                else
+                {
+                    if_reg.latency = cache.missLatency;
+                    if_miss++;
+                }
+                if (if_reg.latency > 1)
+                {
+                    ins_fetch();
+                    pc = pc - 1;
+                }
+                Tag tag;
+                tag.address = addr;
+                tag.core = cn;
+                cache.set[x].push_back(tag);
+                // cout << "Pushed pc into cache" << endl;
             }
-            if (ptr != cache.set[x].end())
-            {
-                if_reg.latency = 1;
-                cache.set[x].erase(ptr);
-            }
-            else if (cache.set[x].size() == cache.assoc)
-            {
-                if_reg.latency = cache.missLatency;
-                cache.set[x].pop_front();
-            }
-            else
-            {
-                if_reg.latency = cache.missLatency;
-            }
-            cache.set[x].push_back(tag);
-            cout << "Pushed pc into cache" << endl;
             if (if_reg.latency == 1)
             {
+                // if (pc == program.size() - 1)
+                ins_fetch();
                 if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
                 {
                     segment = ".data";
@@ -794,6 +863,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     cout << "IF" << endl;
                 }
             }
+            cout << "IF Latency:" << if_reg.latency << endl;
+            cout << "IF :" << program[if_reg.pc] << endl;
             if (if_reg.latency)
                 if_reg.latency--;
         }
@@ -1028,7 +1099,7 @@ void Core::execute(int memory[], ll &top, int i)
         int t = 0;
         program.erase(program.begin(), program.begin() + pc);
         pc = 0;
-        for(auto i:program)
+        for (auto i : program)
         {
             cout << i << endl;
         }
