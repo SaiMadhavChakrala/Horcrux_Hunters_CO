@@ -10,6 +10,8 @@ public:
     long long top = 0;
     // void upload(Core cores[]);
     void run(int d);
+    void writeCSV(const vector<vector<string>> &data, const string &filename,int i);
+    void writeCSV1(const vector<vector<string>> &data, const string &filename,int i);
     Cache cache;
     // Add any other member functions or data members if needed
 };

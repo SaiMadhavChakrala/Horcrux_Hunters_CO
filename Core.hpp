@@ -64,4 +64,5 @@ public:
     bool check_hazard(Registers a, Registers b);
     void stall(vector<int> temp);
     void rev_HisDelete(int temp);
+    vector<vector<string>> pipeline;
 };

@@ -2,6 +2,68 @@
 using namespace std;
 #define ll long long int
 #include "Processor.hpp"
+void Processor::writeCSV(const vector<vector<string>> &data, const string &filename, int i)
+{
+    ofstream file(filename);
+
+    if (!file.is_open())
+    {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+    file << "Ins\\Clock"
+         << ",";
+    for (int i = 0; i < data.size(); i++)
+    {
+        file << i << ",";
+    }
+    file << endl;
+    for (size_t col = 0; col < data[data.size() - 1].size(); ++col)
+    {
+        file << cores[i].program[col] << ",";
+        for (size_t row = 0; row < data.size(); ++row)
+        {
+            file << data[row][col];
+            if (row != data.size() - 1)
+            {
+                file << ",";
+            }
+        }
+        file << endl;
+    }
+    file.close();
+}
+void Processor::writeCSV1(const vector<vector<string>> &data, const string &filename, int i)
+{
+    ofstream file(filename);
+
+    if (!file.is_open())
+    {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+    file << "Ins\\Clock"
+         << ",";
+    for (int i = 0; i < data.size(); i++)
+    {
+        file << i << ",";
+    }
+    file << endl;
+    for (size_t col = 0; col < data[data.size() - 1].size(); ++col)
+    {
+        file << cores[i].program[col] << ",";
+        for (size_t row = 0; row < data.size(); ++row)
+        {
+            file << data[row][col];
+            if (row != data.size() - 1)
+            {
+                file << ",";
+            }
+        }
+        file << endl;
+    }
+    file.close();
+}
 void Processor::run(int d)
 {
     // cache.init_cache();
@@ -42,20 +104,20 @@ void Processor::run(int d)
         //     cout << memory[i] << " ";
         // }
         // cout << endl;
-        cout << "-----Cache-----" << endl;
-        for (int i = 0; i < cache.nSets; i++)
-        {
-            cout << "index:" << i << endl;
-            for (auto j : cache.set[i])
-            {
-                // if (j.core == -1)
-                //     cout << j.address << " " << *((int *)j.address) << endl;
-                // else
-                //     cout << j.address << " Core:" << j.core << endl;
-                cout << j.address << endl;
-            }
-        }
-        cout << endl;
+        // cout << "-----Cache-----" << endl;
+        // for (int i = 0; i < cache.nSets; i++)
+        // {
+        //     cout << "index:" << i << endl;
+        //     for (auto j : cache.set[i])
+        //     {
+        //         // if (j.core == -1)
+        //         //     cout << j.address << " " << *((int *)j.address) << endl;
+        //         // else
+        //         //     cout << j.address << " Core:" << j.core << endl;
+        //         cout << j.address << " Core:" << j.core << endl;
+        //     }
+        // }
+        // cout << endl;
     }
     cout << "--------------Core:1---------------" << endl;
     cout << "Total No.of Cycles   : " << cores[0].clock << endl;
@@ -115,4 +177,7 @@ void Processor::run(int d)
         cout << memory[i] << " ";
     }
     cout << endl;
+    writeCSV1(cores[1].pipeline, "out2.csv", 1);
+    writeCSV(cores[0].pipeline, "out1.csv", 0);
+    
 }

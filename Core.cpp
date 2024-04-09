@@ -202,7 +202,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                     addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
                 else
                     addr = variables[mem.label].address - (int)memory;
-                cout << "Memory access:" << addr << endl;
+                // cout << "Memory access:" << addr << endl;
                 // addr = addr >> 2;
                 int p = (addr >> (int)(log2(cache.blockSize)));
                 addr = (addr >> (int)(log2(cache.blockSize)));
@@ -221,10 +221,10 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                         break;
                     }
                 }
-                if (ptr)
-                    cout << "Found in cache  Tag:" << addr << endl;
-                else
-                    cout << "Not Found" << endl;
+                // if (ptr)
+                //     // cout << "Found in cache  Tag:" << addr << endl;
+                // else
+                //     // cout << "Not Found" << endl;
                 if (ptr)
                 {
                     mem.latency = 1;
@@ -242,7 +242,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                     mem.latency = cache.missLatency;
                 }
                 cache.set[x].push_back(tag);
-                cout << "Pushed into cache" << endl;
+                // cout << "Pushed into cache" << endl;
             }
             else
                 mem.latency = 1;
@@ -294,7 +294,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                     addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
                 else
                     addr = variables[mem.label].address - (int)memory;
-                cout << "Memory access:" << addr << endl;
+                // cout << "Memory access:" << addr << endl;
                 // addr = addr >> 2;
                 int p = (addr >> (int)(log2(cache.blockSize)));
                 addr = (addr >> (int)(log2(cache.blockSize)));
@@ -313,10 +313,10 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                         break;
                     }
                 }
-                if (ptr)
-                    cout << "Found in cache  Tag:" << addr << endl;
-                else
-                    cout << "Not Found" << endl;
+                // if (ptr)
+                //     // cout << "Found in cache  Tag:" << addr << endl;
+                // else
+                //     // cout << "Not Found" << endl;
                 if (ptr)
                 {
                     mem.latency = 1;
@@ -334,7 +334,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                     mem.latency = cache.missLatency;
                 }
                 cache.set[x].push_back(tag);
-                cout << "Pushed into cache" << endl;
+                // cout << "Pushed into cache" << endl;
             }
             else
                 mem.latency = 1;
@@ -343,7 +343,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                 vector<string> a;
                 go_to(a, ex.label);
                 pc++;
-                cout << "PC mem" << pc << endl;
+                // cout << "PC mem" << pc << endl;
                 if (mem.pc + 1 != pc && mem.pc + 2 != pc)
                 {
                     rev_HisDelete(id.pc);
@@ -692,25 +692,27 @@ void Core::stall(vector<int> temp)
             {
                 if (history[j].pc == temp[i])
                 {
-                    cout << "History Deleted: ";
-                    cout << program[history[j].pc] << endl;
+                    // cout << "History Deleted: ";
+                    // cout << program[history[j].pc] << endl;
                     history.erase(history.begin() + j);
                     break;
                 }
             }
         }
     }
-    cout << "History:" << endl;
+    // cout << "History:" << endl;
     for (int i = 0; i < history.size(); i++)
     {
-        cout << program[history[i].pc] << endl;
+        // cout << program[history[i].pc] << endl;
     }
 }
 void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int cn)
 {
     clock++;
     // cout << pc << endl;
-    cout << "----------New Cycle:" << clock - 1 << "----------" << endl;
+    vector<string> x(program.size(),"-");
+    pipeline.push_back(x);
+    // cout << "----------New Cycle:" << clock - 1 << "----------" << endl;
     if (ind)
     {
         vector<int> temp;
@@ -723,10 +725,11 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         {
             if (mem.latency == 0)
             {
+                pipeline[clock - 1][mem.pc] = "WB";
                 temp.push_back(mem.pc);
                 n_ins++;
                 write_back(ind);
-                cout << "WB" << endl;
+                // cout << "WB" << endl;
             }
         }
         if (ex.opcode.size() != 0 || mem.latency != 0)
@@ -734,7 +737,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             if (ex.latency == 0 || mem.latency != 0)
             {
                 meme(memory, top, ind, cache);
-                cout << "MEM Latency:" << mem.latency << endl;
+                pipeline[clock - 1][mem.pc] = "MEM";
+                // cout << "MEM Latency:" << mem.latency << endl;
                 if (m[mem.opcode].type == "mem1")
                     temp2 = 1;
                 if (mem.opcode == "j")
@@ -773,7 +777,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
                 exe(ind);
-                cout << "EX :" << program[ex.pc] << endl;
+                pipeline[clock - 1][ex.pc] = "EX";
+                // cout << "EX :" << program[ex.pc] << endl;
                 if (m[ex.opcode].type == "br" && m[ex.opcode].latency - 1 == ex.latency)
                 {
                     if (ex.pc + 1 != pc - 1)
@@ -804,7 +809,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             }
 
             id_rf(memory, top, ind);
-            cout << "ID" << endl;
+            pipeline[clock - 1][id.pc]="ID/RF";
+            // cout << "ID" << endl;
         }
         if (pc < program.size())
         {
@@ -851,6 +857,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 cache.set[x].push_back(tag);
                 // cout << "Pushed pc into cache" << endl;
             }
+            if(if_reg.latency>1)
+            pipeline[clock - 1][if_reg.pc] = "IF";
             if (if_reg.latency == 1)
             {
                 // if (pc == program.size() - 1)
@@ -860,11 +868,12 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     segment = ".data";
                     execute(memory, top, ind);
                     ins_fetch();
-                    cout << "IF" << endl;
+                    // cout << "IF" << endl;
                 }
+                pipeline[clock - 1][if_reg.pc] = "IF";
             }
-            cout << "IF Latency:" << if_reg.latency << endl;
-            cout << "IF :" << program[if_reg.pc] << endl;
+            // cout << "IF Latency:" << if_reg.latency << endl;
+            // cout << "IF :" << program[if_reg.pc] << endl;
             if (if_reg.latency)
                 if_reg.latency--;
         }
@@ -882,7 +891,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         {
             if (mem.latency == 0)
             {
-                cout << "WB :" << program[mem.pc] << endl;
+                pipeline[clock - 1][mem.pc] = "WB";
+                // cout << "WB :" << program[mem.pc] << endl;
                 // cout << program[mem.pc] << endl;
                 write_back(ind);
                 n_ins++;
@@ -899,7 +909,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             {
                 // cout << program[ex.pc] << endl;
                 meme(memory, top, ind, cache);
-                cout << "MEM Latency:" << mem.latency << endl;
+                pipeline[clock - 1][mem.pc] = "MEM";
+                // cout << "MEM Latency:" << mem.latency << endl;
                 if (mem.latency == 0)
                 {
                     if (mem.opcode == "lw" || mem.opcode == "sw")
@@ -935,7 +946,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 }
                 if (check_hazard(ex, mem) && mem.latency)
                 {
-                    cout << "***WAR/WAW***" << endl;
+                    // cout << "***WAR/WAW***" << endl;
                     stall(temp);
                     return;
                 }
@@ -949,7 +960,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 }
                 if (check_hazard(id, mem) && mem.latency)
                 {
-                    cout << "***WAR/WAW***" << endl;
+                    // cout << "***WAR/WAW***" << endl;
                     stall(temp);
                     return;
                 }
@@ -958,9 +969,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 ex.latency = m[ex.opcode].latency;
             if (ex.opcode.size() == 0 || (ex.opcode.size() != 0 && ex.latency > 0))
             {
-                cout << "EX" << endl;
+                // cout << "EX" << endl;
                 // cout << program[id.pc] << endl;
                 exe(ind);
+                pipeline[clock - 1][ex.pc] = "EX";
                 // cout << "Latency:" << ex.latency << endl;
                 if (ex.latency == 0)
                 {
@@ -997,9 +1009,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 stall(temp);
                 return;
             }
-            cout << "ID" << endl;
+            // cout << "ID" << endl;
             // cout << program[if_reg.pc] << endl;
             id_rf(memory, top, ind);
+            pipeline[clock - 1][id.pc] = "ID/RF";
         }
         if (pc < program.size())
         {
@@ -1055,11 +1068,16 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     segment = ".data";
                     execute(memory, top, ind);
                     ins_fetch();
-                    cout << "IF" << endl;
+                    // cout << "IF" << endl;
                 }
+                pipeline[clock - 1][if_reg.pc] = "IF";
             }
-            cout << "IF Latency:" << if_reg.latency << endl;
-            cout << "IF :" << program[if_reg.pc] << endl;
+            else
+            {
+                pipeline[clock - 1][if_reg.pc] = "IF";
+            }
+            // cout << "IF Latency:" << if_reg.latency << endl;
+            // cout << "IF :" << program[if_reg.pc] << endl;
             if (if_reg.latency)
                 if_reg.latency--;
         }
@@ -1097,11 +1115,11 @@ void Core::execute(int memory[], ll &top, int i)
     {
         segment = ".text";
         int t = 0;
-        program.erase(program.begin(), program.begin() + pc);
+        program.erase(program.begin(), program.begin() + pc+1);
         pc = 0;
         for (auto i : program)
         {
-            cout << i << endl;
+            // cout << i << endl;
         }
         if_reg.parts.clear();
         return;
