@@ -1,9 +1,19 @@
-#pragma once
-#include <bits/stdc++.h>
-using namespace std;
-
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <cstdint>
+#include <cstdarg>
+#include <sstream>
+#include <cctype>
+#include <ios>
+#include<fstream>
+#include<bits/stdc++.h>
+#include<limits>
+#include <list>
+#include<map>
+#include<math.h>
+#include<stack>
+#include<time.h>
 #define ll long long int
-// #define f(i, a, n) for (ll i = a; i < n; i++)
-// #define rf(i, n, a) for (ll i = n - 1; i >= a; i--)
-// #define pb push_back
-// #define pii pair<int, int>
+using namespace std;

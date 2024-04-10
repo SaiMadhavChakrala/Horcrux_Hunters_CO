@@ -1,4 +1,3 @@
-#include "header.hpp"
 #include "Processor.cpp"
 #include "Core.cpp"
 #include <regex>
@@ -20,7 +19,7 @@ int main()
     int d;
     cin >> d;
     int policy;
-    cout << "Enter 1 for LRU Policy, 0 for Random Policy:" ;
+    cout << "Enter 1 for LRU Policy, 0 for Random Policy:";
     cin >> policy;
     freopen("out.txt", "w", stdout);
     Processor sim;
@@ -135,7 +134,7 @@ int main()
     }
     sim.cores[0].init();
     sim.cores[1].init();
-    sim.run(d,policy);
+    sim.run(d, policy);
     string s = "";
     file2.close();
     return 0;
