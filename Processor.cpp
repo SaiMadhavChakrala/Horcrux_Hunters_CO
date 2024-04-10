@@ -1,6 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define ll long long int
 #include "Processor.hpp"
 void Processor::writeCSV(const vector<vector<string>> &data, const string &filename, int i)
 {

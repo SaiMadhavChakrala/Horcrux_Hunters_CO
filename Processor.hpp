@@ -1,6 +1,5 @@
 #pragma once
 #include "Core.hpp"
-// #include "Cache.hpp"
 class Processor
 {
 public:
@@ -9,9 +8,9 @@ public:
     Core cores[2];
     long long top = 0;
     // void upload(Core cores[]);
-    void run(int d,int policy);
-    void writeCSV(const vector<vector<string>> &data, const string &filename,int i);
-    void writeCSV1(const vector<vector<string>> &data, const string &filename,int i);
+    void run(int d, int policy);
+    void writeCSV(const vector<vector<string>> &data, const string &filename, int i);
+    void writeCSV1(const vector<vector<string>> &data, const string &filename, int i);
     Cache cache;
     // Add any other member functions or data members if needed
 };
@@ -32,5 +31,3 @@ public:
 //     unsigned int nSets = 4;
 //     unsigned int missLatency = 4;
 // };
-
-

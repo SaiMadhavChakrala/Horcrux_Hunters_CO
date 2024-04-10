@@ -1,4 +1,3 @@
-#include <bits/stdc++.h>
 #include "Core.hpp"
 #define ll long long int
 using namespace std;
