@@ -1,5 +1,3 @@
-0
-1
 -------Before running-------
 REG  Core1     Core2     
 X0     0         0         
@@ -52,7 +50,7 @@ CPI                  : 1.28293
 Cache Misses         : 5+5
 Cache Hits           : 1135+3376
 
-Total Cache Acesses  : 7531
+Total Cache Acesses  : 7543
 Total Cache Misses   : 22
 Miss Rate            : 0.00292126
 

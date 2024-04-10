@@ -218,6 +218,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache, int policy)
             copy(mem, ex);
             if (mem.opcode == "lw")
             {
+                // hits++;
                 int addr;
                 if (mem.rs1 != -1)
                     addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
@@ -315,6 +316,7 @@ void Core::meme(int memory[], int top, int ind, Cache &cache, int policy)
             copy(mem, ex);
             if (mem.opcode == "lw")
             {
+                // hits++;
                 int addr;
                 if (mem.rs1 != -1)
                     addr = (int)(reg[mem.rs1] + mem.offset) - (int)memory;
@@ -768,6 +770,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             if (ex.latency == 0 || mem.latency != 0)
             {
                 meme(memory, top, ind, cache, policy);
+                // if (mem.opcode == "lw" || mem.opcode == "sw")
+                //     hits++;
                 pipeline[clock - 1][mem.pc] = "MEM";
                 // cout << "MEM Latency:" << mem.latency << endl;
                 if (m[mem.opcode].type == "mem1")
@@ -947,6 +951,8 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             {
                 // cout << program[ex.pc] << endl;
                 meme(memory, top, ind, cache, policy);
+                // if (mem.opcode == "lw" || mem.opcode == "sw")
+                //     hits++;
                 pipeline[clock - 1][mem.pc] = "MEM";
                 // cout << "MEM Latency:" << mem.latency << endl;
                 if (mem.latency == 0)

@@ -67,13 +67,13 @@ void Processor::writeCSV1(const vector<vector<string>> &data, const string &file
 void Processor::run(int d, int policy)
 {
     // cache.init_cache();
-    cout << log2(cache.nSets) << endl;
+    // cout << log2(cache.nSets) << endl;
     for (int i = 0; i < cache.nSets; i++)
     {
         list<Tag> x;
         cache.set.push_back(x);
     }
-    cout << cache.set.size() << endl;
+    // cout << cache.set.size() << endl;
     cout << "-------Before running-------" << endl;
     cout << left << setw(5) << "REG" << setw(8) << setw(10) << "Core1" << setw(8) << setw(10) << "Core2" << endl;
     for (int i = 0; i < 32; i++)
@@ -134,9 +134,23 @@ void Processor::run(int d, int policy)
     cout << "Cache Misses         : " << cores[1].cache_miss << "+" << cores[1].if_miss << endl;
     cout << "Cache Hits           : " << cores[1].hits << "+" << cores[1].if_hit << endl;
     cout << endl;
-    cout << "Total Cache Acesses  : " << cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss << endl;
+    cout << "Total Cache Acesses  : " << cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss + cores[0].if_miss + cores[1].if_miss << endl;
     cout << "Total Cache Misses   : " << cores[1].cache_miss + cores[0].cache_miss + cores[1].if_miss + cores[0].if_miss << endl;
-    cout << "Miss Rate            : " <<((cores[1].cache_miss + cores[0].cache_miss + cores[1].if_miss + cores[0].if_miss)/(double)(cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss)) <<endl;
+    cout << "Miss Rate            : " << ((cores[1].cache_miss + cores[0].cache_miss + cores[1].if_miss + cores[0].if_miss) / (double)(cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss)) << endl;
+    // cout <<endl<< "-----Cache-----" << endl;
+    // for (int i = 0; i < cache.nSets; i++)
+    // {
+    //     cout << "index:" << i << endl;
+    //     for (auto j : cache.set[i])
+    //     {
+    //         // if (j.core == -1)
+    //         //     cout << j.address << " " << *((int *)j.address) << endl;
+    //         // else
+    //         //     cout << j.address << " Core:" << j.core << endl;
+    //         cout << j.address << " Core:" << j.core << endl;
+    //     }
+    // }
+    // cout << endl;
     string s = "";
     std::ofstream outFile("output.txt");
     for (int i = 0; i < 32; i++)

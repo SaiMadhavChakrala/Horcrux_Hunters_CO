@@ -12,7 +12,7 @@ class Cache
 {
 public:
     vector<list<Tag>> set;
-    unsigned int cacheSize;
+    unsigned int cacheSize=512;
     unsigned int blockSize = 16;
     unsigned int numBlocks = 32;
     unsigned int assoc = 32;
