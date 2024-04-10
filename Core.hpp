@@ -52,9 +52,10 @@ public:
     map<string, Instruction> m;
     vector<Registers> history;
     void init();
-    void stagewise_execute(int memory[], ll &top, int ind, Cache &cache,int cn);
+    void random_Policy(list<Tag> &a);
+    void stagewise_execute(int memory[], ll &top, int ind, Cache &cache,int cn,int policy);
     void write_back(int ind);
-    void meme(int memory[], int top, int ind,Cache &cache);
+    void meme(int memory[], int top, int ind,Cache &cache,int policy);
     void exe(int ind);
     void id_rf(int memory[], ll &top, int ind);
     void ins_fetch();

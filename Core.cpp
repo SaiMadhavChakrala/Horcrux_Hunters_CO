@@ -58,6 +58,27 @@ int Core::regf(string s)
         return stoi(s.substr(1, s.size())) + 25;
     return -1;
 }
+void Core::random_Policy(list<Tag> &a)
+{
+    std::srand(std::time(nullptr));
+    int rand = std::rand() % (a.size()) + 1;
+    if (rand == 1)
+    {
+        a.erase(a.begin());
+    }
+    else
+    {
+        int i = 1;
+        for (auto j = a.begin(); j != a.end() && i < rand; j++)
+        {
+            i++;
+            if (i == rand)
+            {
+                a.erase(j);
+            }
+        }
+    }
+}
 void Core::go_to(vector<string> &parts, string label)
 {
     if (labels[label] != 0)
@@ -188,7 +209,7 @@ void Core::write_back(int ind)
     }
     reset(mem);
 }
-void Core::meme(int memory[], int top, int ind, Cache &cache)
+void Core::meme(int memory[], int top, int ind, Cache &cache, int policy)
 {
     if (ind)
     {
@@ -234,7 +255,12 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                 {
                     mem.latency = cache.missLatency;
                     cache_miss++;
-                    cache.set[x].pop_front();
+                    if (policy)
+                        cache.set[x].pop_front();
+                    else
+                    {
+                        random_Policy(cache.set[x]);
+                    }
                 }
                 else
                 {
@@ -326,7 +352,12 @@ void Core::meme(int memory[], int top, int ind, Cache &cache)
                 {
                     mem.latency = cache.missLatency;
                     cache_miss++;
-                    cache.set[x].pop_front();
+                    if (policy)
+                        cache.set[x].pop_front();
+                    else
+                    {
+                        random_Policy(cache.set[x]);
+                    }
                 }
                 else
                 {
@@ -706,11 +737,11 @@ void Core::stall(vector<int> temp)
         // cout << program[history[i].pc] << endl;
     }
 }
-void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int cn)
+void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int cn, int policy)
 {
     clock++;
     // cout << pc << endl;
-    vector<string> x(program.size(),"-");
+    vector<string> x(program.size(), "-");
     pipeline.push_back(x);
     // cout << "----------New Cycle:" << clock - 1 << "----------" << endl;
     if (ind)
@@ -736,7 +767,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         {
             if (ex.latency == 0 || mem.latency != 0)
             {
-                meme(memory, top, ind, cache);
+                meme(memory, top, ind, cache, policy);
                 pipeline[clock - 1][mem.pc] = "MEM";
                 // cout << "MEM Latency:" << mem.latency << endl;
                 if (m[mem.opcode].type == "mem1")
@@ -809,12 +840,12 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             }
 
             id_rf(memory, top, ind);
-            pipeline[clock - 1][id.pc]="ID/RF";
+            pipeline[clock - 1][id.pc] = "ID/RF";
             // cout << "ID" << endl;
         }
         if (pc < program.size())
         {
-            if_hit++;
+            // if_hit++;
             if (if_reg.parts.size() == 0)
             {
                 int x = log2(cache.nSets);
@@ -838,7 +869,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 else if (cache.set[x].size() == cache.assoc)
                 {
                     if_reg.latency = cache.missLatency;
-                    cache.set[x].pop_front();
+                    if (policy)
+                        cache.set[x].pop_front();
+                    else
+                        random_Policy(cache.set[x]);
                     if_miss++;
                 }
                 else
@@ -857,11 +891,15 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 cache.set[x].push_back(tag);
                 // cout << "Pushed pc into cache" << endl;
             }
-            if(if_reg.latency>1)
-            pipeline[clock - 1][if_reg.pc] = "IF";
+            if (if_reg.latency > 1)
+            {
+                pipeline[clock - 1][if_reg.pc] = "IF";
+                if_hit++;
+            }
             if (if_reg.latency == 1)
             {
                 // if (pc == program.size() - 1)
+                if_hit++;
                 ins_fetch();
                 if (if_reg.parts.size() != 0 && if_reg.parts[0] == ".data")
                 {
@@ -908,7 +946,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
             if (ex.latency == 0 || mem.latency != 0)
             {
                 // cout << program[ex.pc] << endl;
-                meme(memory, top, ind, cache);
+                meme(memory, top, ind, cache, policy);
                 pipeline[clock - 1][mem.pc] = "MEM";
                 // cout << "MEM Latency:" << mem.latency << endl;
                 if (mem.latency == 0)
@@ -1016,7 +1054,7 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
         }
         if (pc < program.size())
         {
-            if_hit++;
+
             if (if_reg.parts.size() == 0)
             {
                 int x = log2(cache.nSets);
@@ -1040,7 +1078,10 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                 else if (cache.set[x].size() == cache.assoc)
                 {
                     if_reg.latency = cache.missLatency;
-                    cache.set[x].pop_front();
+                    if (policy)
+                        cache.set[x].pop_front();
+                    else
+                        random_Policy(cache.set[x]);
                     if_miss++;
                 }
                 else
@@ -1070,11 +1111,13 @@ void Core::stagewise_execute(int memory[], ll &top, int ind, Cache &cache, int c
                     ins_fetch();
                     // cout << "IF" << endl;
                 }
+                if_hit++;
                 pipeline[clock - 1][if_reg.pc] = "IF";
             }
-            else
+            if (if_reg.latency > 1)
             {
                 pipeline[clock - 1][if_reg.pc] = "IF";
+                if_hit++;
             }
             // cout << "IF Latency:" << if_reg.latency << endl;
             // cout << "IF :" << program[if_reg.pc] << endl;
@@ -1115,7 +1158,7 @@ void Core::execute(int memory[], ll &top, int i)
     {
         segment = ".text";
         int t = 0;
-        program.erase(program.begin(), program.begin() + pc+1);
+        program.erase(program.begin(), program.begin() + pc + 1);
         pc = 0;
         for (auto i : program)
         {

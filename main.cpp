@@ -19,6 +19,9 @@ int main()
     cout << "Enter 0 for Data Forwarding else 1:";
     int d;
     cin >> d;
+    int policy;
+    cout << "Enter 1 for LRU Policy, 0 for Random Policy:" ;
+    cin >> policy;
     freopen("out.txt", "w", stdout);
     Processor sim;
     std::string filepath = "./Testfile[1].txt";
@@ -132,7 +135,7 @@ int main()
     }
     sim.cores[0].init();
     sim.cores[1].init();
-    sim.run(d);
+    sim.run(d,policy);
     string s = "";
     file2.close();
     return 0;

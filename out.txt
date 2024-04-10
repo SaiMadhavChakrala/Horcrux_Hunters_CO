@@ -42,14 +42,15 @@ Total No.of Cycles   : 2504
 Instructions Executed: 1856
 IPC                  : 0.741214
 CPI                  : 1.34914
-Cache Misses         : 5
+Cache Misses         : 5+7
+Cache Hits           : 755+2256
 --------------Core:2---------------
 Total No.of Cycles   : 3818
 Instructions Executed: 2976
 IPC                  : 0.779466
 CPI                  : 1.28293
-Cache Misses         : 5
-Cache Hits           : 1135
+Cache Misses         : 5+5
+Cache Hits           : 1135+3377
 
 ---------After Running---------
 REG  Core1     Core2     
@@ -68,13 +69,13 @@ X11    0         0
 X12    0         0         
 X13    0         0         
 X14    0         0         
-X15    6797584   6797660   
-X16    6797576   6797584   
-X17    6797504   20        
+X15    6797576   6797652   
+X16    6797568   6797576   
+X17    6797496   20        
 X18    20        0         
 X19    19        0         
-X20    6797580   0         
-X21    6797504   0         
+X20    6797572   0         
+X21    6797496   0         
 X22    0         0         
 X23    0         0         
 X24    0         0         
