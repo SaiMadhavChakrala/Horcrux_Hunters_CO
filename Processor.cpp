@@ -125,14 +125,18 @@ void Processor::run(int d, int policy)
     cout << "IPC                  : " << ((double)cores[0].n_ins / cores[0].clock) << endl;
     cout << "CPI                  : " << ((double)cores[0].clock / cores[0].n_ins) << endl;
     cout << "Cache Misses         : " << cores[0].cache_miss << "+" << cores[0].if_miss << endl;
-    cout << "Cache Hits           : " << cores[0].hits << "+" << 1 + cores[0].if_hit << endl;
+    cout << "Cache Hits           : " << cores[0].hits << "+" << cores[0].if_hit << endl;
     cout << "--------------Core:2---------------" << endl;
     cout << "Total No.of Cycles   : " << cores[1].clock << endl;
     cout << "Instructions Executed: " << cores[1].n_ins << endl;
     cout << "IPC                  : " << ((double)cores[1].n_ins / cores[1].clock) << endl;
     cout << "CPI                  : " << ((double)cores[1].clock / cores[1].n_ins) << endl;
     cout << "Cache Misses         : " << cores[1].cache_miss << "+" << cores[1].if_miss << endl;
-    cout << "Cache Hits           : " << cores[1].hits << "+" << 1 + cores[1].if_hit << endl;
+    cout << "Cache Hits           : " << cores[1].hits << "+" << cores[1].if_hit << endl;
+    cout << endl;
+    cout << "Total Cache Acesses  : " << cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss << endl;
+    cout << "Total Cache Misses   : " << cores[1].cache_miss + cores[0].cache_miss + cores[1].if_miss + cores[0].if_miss << endl;
+    cout << "Miss Rate            : " <<((cores[1].cache_miss + cores[0].cache_miss + cores[1].if_miss + cores[0].if_miss)/(double)(cores[1].if_hit + cores[0].if_hit + cores[0].hits + cores[1].hits + cores[0].cache_miss + cores[1].cache_miss)) <<endl;
     string s = "";
     std::ofstream outFile("output.txt");
     for (int i = 0; i < 32; i++)

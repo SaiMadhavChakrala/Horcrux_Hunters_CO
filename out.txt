@@ -43,14 +43,18 @@ Instructions Executed: 1856
 IPC                  : 0.741214
 CPI                  : 1.34914
 Cache Misses         : 5+7
-Cache Hits           : 755+2256
+Cache Hits           : 755+2255
 --------------Core:2---------------
 Total No.of Cycles   : 3818
 Instructions Executed: 2976
 IPC                  : 0.779466
 CPI                  : 1.28293
 Cache Misses         : 5+5
-Cache Hits           : 1135+3377
+Cache Hits           : 1135+3376
+
+Total Cache Acesses  : 7531
+Total Cache Misses   : 22
+Miss Rate            : 0.00292126
 
 ---------After Running---------
 REG  Core1     Core2     
