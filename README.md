@@ -1,6 +1,40 @@
 CO - Dual Core Processor
 Horcrux Hunters
 
+
+Refer to out.txt for the ouput/memory/reg values
+
+
+Phase - 3
+
+
+10-04-2024
+Random Replacement Policy implemented for Data Forwarding
+
+Random Replacement Policy is similar to the LRU policy. However here, instead of replacing the least accessed data which is the head of the list corresponding to the set, the data at a random location in the list is replaced.
+
+
+
+08-04-2024
+LRU implemented 
+
+In each memory instruction, the corresponding index of the set for the given address is found by bit manipulation. Then the address is searched in the corersponding index. If it is not found and the corresponding set is completely assigned, then the first element which is the least accessed address is replaced with the current memory address.
+
+
+
+03-04-2024
+Implemented Cache for memory instructions
+
+The class Cache is declared. The Sets in the cache are implemented by a Vector of Lists. Each list represents a set. The idea of implementing sets by lists will be helpful while implementing LRU policy.
+The List contains an object Tag which contains value and a integer core_bit.
+
+The core_bit represents whether the value stored is an address or a PC value. Now, at  each Read instruction of memory, if the address that is being searched is in the cache, then the latency of the instruction remains the same, else the latency of the instruction is increased and the address from the memory is stored in the cache.
+
+Write After Write hazards and Write After Read hazards which are possible due to variable latency of the memory instructions are checked, and corresponding stalls are implemented.
+
+
+
+
 Refer to out.txt for the ouput/memory/reg values
 
 Phase-2
