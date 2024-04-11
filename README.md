@@ -4,7 +4,9 @@
 
 Refer to out.txt for the ouput/memory/reg values/miss rate/IPC/CPI...
 
-Refer out1.csv and out2.csv for Pipeline Diagrams of corresponding cores
+Refer out1.csv and out2.csv for Pipeline Diagrams of corresponding cores.
+
+Cache configuration can be changed by altering the value in Cache.hpp.
 
 ## Phase - 3
 
