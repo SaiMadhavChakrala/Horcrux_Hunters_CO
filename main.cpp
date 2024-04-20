@@ -17,12 +17,37 @@ int main()
 {
     cout << "Enter 0 for Data Forwarding else 1:";
     int d;
-    cin >> d;
+    // cin >> d;
     int policy;
     cout << "Enter 1 for LRU Policy, 0 for Random Policy:";
-    cin >> policy;
+    // cin >> policy;
+
+    ifstream file3("cache_df.txt"); 
+    string line3; 
+    vector<int> config;
+    if (file3.is_open()) { 
+        // Read each line from the file and store it in the 
+        // 'line' variable. 
+        while (getline(file3, line3)) { 
+            cout << line3 << endl; 
+            config.push_back(stoi(line3));
+        } 
+  
+        // Close the file stream once all lines have been 
+        // read. 
+        file3.close(); 
+    } 
+    else { 
+        // Print an error message to the standard error 
+        // stream if the file cannot be opened. 
+        cerr << "Unable to open file!" << endl; 
+    } 
+
+
+
     freopen("out.txt", "w", stdout);
     Processor sim;
+    sim.config=config;
     std::string filepath = "./Testfile[1].txt";
     std::ifstream file(filepath);
     if (!file.is_open())
@@ -134,6 +159,8 @@ int main()
     }
     sim.cores[0].init();
     sim.cores[1].init();
+    d = config[5];
+    policy=config[6];
     sim.run(d, policy);
     string s = "";
     file2.close();

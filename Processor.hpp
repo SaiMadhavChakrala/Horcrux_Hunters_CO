@@ -11,6 +11,7 @@ public:
     void run(int d, int policy);
     void writeCSV(const vector<vector<string>> &data, const string &filename, int i);
     void writeCSV1(const vector<vector<string>> &data, const string &filename, int i);
+    vector<int> config;
     Cache cache;
     // Add any other member functions or data members if needed
 };

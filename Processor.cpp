@@ -65,6 +65,13 @@ void Processor::run(int d, int policy)
 {
     // cache.init_cache();
     // cout << log2(cache.nSets) << endl;
+
+    cache.blockSize=this->config[0];
+    cache.numBlocks=this->config[1];
+    cache.assoc=this->config[2];
+    cache.nSets=this->config[3];
+    cache.missLatency=this->config[4];
+
     for (int i = 0; i < cache.nSets; i++)
     {
         list<Tag> x;
