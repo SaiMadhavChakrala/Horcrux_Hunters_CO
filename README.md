@@ -2,6 +2,19 @@
 **Team-Horcrux Huters**
 ----
 
+Open the folder Web in the termianl and run the commands 
+
+```
+set FLASK_APP=main.py
+python main.py --m flask run
+```
+or
+```
+set FLASK_APP=main.py
+flask --app main run
+```
+And click on the URL generated.
+
 Refer to out.txt for the ouput/memory/reg values/miss rate/IPC/CPI...
 
 Refer out1.csv and out2.csv for Pipeline Diagrams of corresponding cores.
