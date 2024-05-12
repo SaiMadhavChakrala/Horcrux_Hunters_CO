@@ -21,6 +21,16 @@ Refer out1.csv and out2.csv for Pipeline Diagrams of corresponding cores.
 
 Cache configuration can be changed by altering the value in Cache.hpp.
 
+## Phase - 4
+
+Added GUI.
+![WhatsApp Image 2024-05-12 at 09 58 20_7ee1b7df](https://github.com/SaiMadhavChakrala/Horcrux_Hunters_CO/assets/143097157/ea07d632-8071-4a7a-b4d3-9c7bfe38ef94)
+![WhatsApp Image 2024-05-12 at 09 58 43_0180f3af](https://github.com/SaiMadhavChakrala/Horcrux_Hunters_CO/assets/143097157/0028b995-53ab-43e0-8510-bde6746f5657)
+
+
+---
+
+
 ## Phase - 3
 
 * 10-04-2024
