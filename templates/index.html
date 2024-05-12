@@ -15,7 +15,7 @@
                 grid-template-rows: 520px 100px;
         }
         #textarea1{
-            width: 850px  !important ;
+            width: 793px  !important ;
                 height : 450px  !important ;
                 font-size :larger;
                 color: #ececec;
@@ -54,7 +54,7 @@
             user-select: none; /* Prevent selection of line numbers */
         }
         #textarea2{
-            width: 850px  !important ;
+            width: 793px  !important ;
                 height : 450px  !important ;
                 font-size :larger;
                 color: #ececec;
@@ -89,7 +89,7 @@
         table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         border-collapse: separate; 
         }
 
@@ -202,8 +202,15 @@
             font-size: 20px;
             margin-top: 20px;
         }
-
-
+        #memblock{
+            display: none;
+        }
+        .editor{
+            margin-right: 20px;
+        }
+        .reg2 table{
+            width: 793px  !important ;
+        }
     </style>
 
 
@@ -215,7 +222,7 @@
 
 <body>
     <div class="container">
-        <div>
+        <div id="one">
             
             <form action="/index" method="post">
                 <div class="flex1">
@@ -278,7 +285,18 @@
                 <div id="latency" class="cache_table"> <p color="white">Number of Sets : {{nSets}}</p> <textarea  class="input shadow" name="ns" placeholder="Enter Latency" rows ="1" colums ="7">{{nSets}}</textarea></div>
                 
               </div>
-                  
+              <div id="memblock">
+                <table>
+                    <tr>
+                        <th>Memory</th>
+                    </tr>
+                    {% for data in memory %}
+                        <tr>
+                            <td>{{data.meme}}</td>
+                        </tr>
+                    {%  endfor %}
+                </table>
+              </div>    
                 
              <!-- <textarea class="input shadow" name="p" rows="1" cols="10" placeholder="Policy">{{policy}}</textarea> -->
               
@@ -287,18 +305,20 @@
         <div>
           </form>
             <div class="reg2" >
+                <div>
+
               <table id="core1">
                 <thead >
                   <tr>
-                      {% for col in df.columns %}
+                      {% for col in df[0].keys() %}
                         <th {% if loop.index == 0 %}class="fixed-col"{% endif %}>{{ col }}</th>
                       {% endfor %}
                   </tr>
                 </thead>
                 <tbody>
-                  {% for index, row in df.iterrows() %}
+                  {% for row in df %}
                       <tr>
-                          {% for value in row %}
+                          {% for value in row.values() %}
                               <td>{{ value }}</td>
                           {% endfor %}
                       </tr>
@@ -306,33 +326,38 @@
                 </tbody>
                         
               </table>
+            </div>
+                <div>
               <table id="core2">
 
-                <thead>
-                  <tr>
-                      {% for col in df2.columns %}
-                          <th>{{ col }}</th>
-                      {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for index, row in df2.iterrows() %}
-                      <tr>
-                          {% for value in row %}
-                              <td>{{ value }}</td>
-                          {% endfor %}
-                      </tr>
-                  {% endfor %}
-                </tbody>
+                <thead >
+                    <tr>
+                        {% for col in df2[0].keys() %}
+                          <th {% if loop.index == 0 %}class="fixed-col"{% endif %}>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in df2 %}
+                        <tr>
+                            {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                  </tbody>
+                          
                         
               </table>
+            </div>
           </div>
         </div>
 
         <div>
             <div class="membut">
                 <button class="button" id="register" onclick="switchTable('register')">Registers</button>
-                <button class="button" id="cache"  onclick="switchTable('cache')">Cache</button>
+                <button class="button" id="mem"  onclick="switchTable('mem')">Memory</button>
+                <button class="button" id="cache"  onclick="switchTable('cache')">Cache Configuration</button>
             </div>
             <div id="details">
             <p class="p">{{c1}}</p>
@@ -377,9 +402,8 @@
         const editor2 = document.getElementById("editor2");
         const button1 = document.getElementById("button1");
         const button2 = document.getElementById("button2");
-        
-        const core1 = document.getElementById("core1");
-        const core2 = document.getElementById("core2");
+        var core1 = document.getElementById("core1");
+        var core2 = document.getElementById("core2");
         if (editorId === "editor1") {
           editor1.style.display = "block";
           editor2.style.display = "none";
@@ -387,6 +411,9 @@
           button2.style.display = "none";
 
           core1.style.display ="block";
+          core1.style.width ="793px";
+
+            
           core2.style.display ="none";
         } else {
           editor1.style.display = "none";
@@ -397,6 +424,8 @@
           
           core1.style.display ="none";
           core2.style.display ="block";
+          core2.style.width = "793px";
+
         }
       }
       function rundetails()
@@ -407,6 +436,7 @@
      function switchTable(id)
      {
         const reg = document.getElementById("register");
+        const mem = document.getElementById("mem");
         const cache = document.getElementById("cache");
         const cacheblock = document.getElementById("cacheblock");
         const values=document.getElementById("values");
@@ -414,9 +444,21 @@
         if(id === "register")
         {
             reg.style.display = "none";
+            mem.style.display = "block";
             cache.style.display = "block";
             values.style.display="block";
             cacheblock.style.display="none";
+            memblock.style.display="none";
+        }
+        else if(id === "mem")
+        {
+            mem.style.display = "none";
+            reg.style.display = "block";
+            cache.style.display = "block";
+            memblock.style.display="block";
+            cacheblock.style.display="none";
+            values.style.display="none";
+            
         }
         else
         {
@@ -424,7 +466,8 @@
             cacheblock.style.display = "block";
             values.style.display="none";
             reg.style.display = "block";
-            // mem.style.display = "block";
+            mem.style.display = "block";
+            memblock.style.display="none";
         }
      }
      
@@ -473,6 +516,21 @@
         editor.getSession().on('change', function(e) {
             console.log("Editor content has changed!");
         });
+
+
+
+
+        const edt2 = document.querySelector("#textarea2");
+
+
+        // Set the modified theme back to the editor
+        // edit1.setTheme(editorTheme);
+        ace.edit(edt2, {
+            theme: "ace/theme/chaos",
+            mode: "ace/mode/risc",
+            // Add sme custom RISC-V highlighting rules
+        });
+        const edit2 = ace.edit(edt2);
    </script>
    
 </body>
