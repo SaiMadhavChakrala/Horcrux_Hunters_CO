@@ -196,11 +196,12 @@ def update_data():
     lines5 =lines5.split(" ")
     print(lines5)
     # print(lines5)
-    c1 = "Core 1"
-    c2 = "Core 2"
+    c1 = "Core  1"
+    c2 = "Core  2"
     np = "Net Program"
     out =[]
     memory=[]
+    memory = []
     for i in range(len(lines5)):
         memory.append({'meme':lines5[i]})
     for i in range(32):
