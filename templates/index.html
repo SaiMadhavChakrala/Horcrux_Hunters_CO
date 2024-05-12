@@ -332,7 +332,6 @@
         <div>
             <div class="membut">
                 <button class="button" id="register" onclick="switchTable('register')">Registers</button>
-                <button class="button" id="mem"  onclick="switchTable('mem')">Memory</button>
                 <button class="button" id="cache"  onclick="switchTable('cache')">Cache</button>
             </div>
             <div id="details">
@@ -408,7 +407,6 @@
      function switchTable(id)
      {
         const reg = document.getElementById("register");
-        const mem = document.getElementById("mem");
         const cache = document.getElementById("cache");
         const cacheblock = document.getElementById("cacheblock");
         const values=document.getElementById("values");
@@ -416,16 +414,9 @@
         if(id === "register")
         {
             reg.style.display = "none";
-            mem.style.display = "block";
             cache.style.display = "block";
             values.style.display="block";
             cacheblock.style.display="none";
-        }
-        else if(id === "mem")
-        {
-            mem.style.display = "none";
-            reg.style.display = "block";
-            cache.style.display = "block";
         }
         else
         {
@@ -433,7 +424,7 @@
             cacheblock.style.display = "block";
             values.style.display="none";
             reg.style.display = "block";
-            mem.style.display = "block";
+            // mem.style.display = "block";
         }
      }
      

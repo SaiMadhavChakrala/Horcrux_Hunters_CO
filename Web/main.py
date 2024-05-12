@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for
 import subprocess
 import pandas as pd
 app = Flask(__name__)
-print(app)
-print("HI")
 
 alias = ["zero","ra","sp","gp","tp","t0","t1","t2","s0","s1","a0","a1","a2","a3","a4","a5","a6","a7","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","t3","t4","t5","t6","t7","t8"]
 
@@ -40,7 +38,8 @@ middle3=[]
 c1=""
 c2=""
 np=""
-
+lines5=[]
+memory = []
 @app.route("/", methods=['GET', 'POST'])
 def page1():
     if request.method == 'POST':
@@ -63,7 +62,9 @@ def page1():
         data1 = {'A': range(100), 'B': range(100)}
         df = pd.DataFrame(data1)
         df2 = pd.DataFrame(data1)
-        return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np)
+        df =  df.to_dict(orient='records')
+        df2 = df2.to_dict(orient='records')
+        return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np,memory=memory)
     else:
         with open('Testfile[1].txt', 'r') as file:
             # Read the entire contents of the file into a string
@@ -84,7 +85,9 @@ def page1():
         data1 = {'Ins/Clock': range(1), 'Unnamed': range(1)}
         df = pd.DataFrame(data1)
         df2 = pd.DataFrame(data1)
-        return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np)
+        df =  df.to_dict(orient='records')
+        df2 = df2.to_dict(orient='records')
+        return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np,memory=memory)
     
 
 
@@ -140,7 +143,8 @@ def update_data():
     subprocess.run(["./compiled_cpp_file"])
     df=pd.read_csv('./out1.csv')
     df2=pd.read_csv('./out2.csv')
-
+    df = df.to_dict(orient='records')
+    df2 = df2.to_dict(orient='records')
     Core_one=input
     filename = "output.txt"
     lines = read_file_to_list(filename)
@@ -187,15 +191,22 @@ def update_data():
     middle3=[]
     for x in range(len(left)):
         middle3.append({'left':left[x],'right':right[x]})
-
+    print(lines3[91])
+    lines5 = lines3[91]
+    lines5 =lines5.split(" ")
+    print(lines5)
+    # print(lines5)
     c1 = "Core 1"
     c2 = "Core 2"
     np = "Net Program"
     out =[]
+    memory=[]
+    for i in range(len(lines5)):
+        memory.append({'meme':lines5[i]})
     for i in range(32):
         out.append({'Register':"x"+str(i),'Alias':alias[i],'Core_1':lines[i],'Core_2':lines2[i]})
 
-    return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np)
+    return render_template('index.html',Core_one = Core_one,Core_two = Core_two,blockSize=blockSize,numBlocks=numBlocks,assoc=assoc,nSets=nSets,missLatency=missLatency,policy=policy,dataforwarding=dataforwarding,df=df,out=out,df2=df2,middle=middle,middle2=middle2,middle3=middle3,c1=c1,c2=c2,np=np,memory=memory)
         
 
 def read_file_to_list(filename):
@@ -214,7 +225,3 @@ def read_file_to_list(filename):
   # Remove trailing newline characters from each line
   lines = [line.rstrip() for line in lines]
   return lines
-
-
-if __name__ == '__main__':
-    app.run()
